@@ -122,7 +122,9 @@ function topic(id){
   if(id==="colors")body=`<div class="grid grid-2">${lesson.colors.map(x=>`<div class="card">${ar(x[0])}<p>${x[1]}</p></div>`).join("")}</div>`;
   if(id==="days")body=`<div class="grid grid-2">${lesson.days.map((x,i)=>`<div class="card"><span class="muted">روز ${i+1}</span>${ar(x)}</div>`).join("")}</div>`;
   if(id==="seasons")body=`<div class="grid grid-2">${lesson.seasons.map(x=>`<div class="card">${ar(x[0])}<p>${x[1]}</p></div>`).join("")}</div>`;
-  if(id==="synonyms")body=`<div class="grid grid-2">${lesson.pairs.map(x=>`<div class="card">${ar(x[0]+" ↔ "+x[1])}<p>${x[2]}</p></div>`).join("")}</div>`;
+  if(id==="vocabulary")body=`<div class="grid grid-2">${lesson.vocabulary.map(x=>`<div class="card">${ar(x[0])}<p>${x[1]}</p></div>`).join("")}</div>`;
+  if(id==="classification")body=`<div class="grid grid-2">${lesson.classification.map(x=>`<div class="card"><div class="kicker"><strong>${x[1]}</strong></div>${ar(x[0])}<p>${x[2]}</p></div>`).join("")}</div>`;
+  if(id==="synonyms")body=`<div class="grid grid-2">${lesson.synonymPairs.map(x=>`<div class="card">${ar(x[0]+" = "+x[1])}<p>${x[2]} • ${x[3]}</p></div>`).join("")}${lesson.antonymPairs.map(x=>`<div class="card">${ar(x[0]+" ≠ "+x[1])}<p>متضاد</p></div>`).join("")}</div>`;
   return `<section class="lesson">${header(t.title,t.description)}${body}<div class="topic-actions"><button class="btn btn-primary" data-a="quiz-topic" data-id="${id}">تمرین این موضوع</button><button class="btn btn-secondary" data-a="go" data-r="learn">همهٔ موضوع‌ها</button></div></section>`;
 }
 
