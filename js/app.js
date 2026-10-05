@@ -187,18 +187,23 @@ function selectQuestions(mode,topic=null){
   const pool=questions.filter(q=>!topic||q.topic===topic);
   const count=mode==="exam"?Math.min(20,pool.length):mode==="diagnostic"?Math.min(10,pool.length):Math.min(10,pool.length);
   if(topic)return shuffle(pool).slice(0,count);
+  const groups=pool.reduce((acc,q)=>{(acc[q.topic]??=[]).push(q);return acc},{});
+  const entries=shuffle(Object.entries(groups));
   if(mode==="diagnostic"){
-    const groups=pool.reduce((acc,q)=>{(acc[q.topic]??=[]).push(q);return acc},{});
+    // Diagnostic is intentionally broad: sample one question from each of up to 10 topics,
+    // then fill any remaining slots without duplicating a question.
     const selected=[];
-    const entries=shuffle(Object.entries(groups));
-    while(selected.length<count&&entries.length){
-      for(const [,items] of entries){
-        if(selected.length>=count)break;
-        const remaining=items.filter(q=>!selected.includes(q));
-        if(remaining.length)selected.push(remaining[Math.floor(Math.random()*remaining.length)]);
-      }
+    for(const [,items] of entries.slice(0,count)){
+      selected.push(items[Math.floor(Math.random()*items.length)]);
     }
-    return selected;
+    const rest=shuffle(pool.filter(q=>!selected.includes(q)));
+    return selected.concat(rest).slice(0,count);
+  }
+  if(mode==="exam"){
+    // The final exam must touch every topic before using extra random questions.
+    const selected=[];
+    for(const [,items] of entries)selected.push(items[Math.floor(Math.random()*items.length)]);
+    return selected.concat(shuffle(pool.filter(q=>!selected.includes(q)))).slice(0,count);
   }
   return shuffle(pool).slice(0,count);
 }
