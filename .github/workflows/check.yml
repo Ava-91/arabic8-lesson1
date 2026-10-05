@@ -1,0 +1,18 @@
+name: Validate
+on:
+  pull_request:
+  push:
+    branches: [main, feature/lesson1-learning-app]
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check JavaScript syntax
+        run: |
+          node --check js/app.js
+          node --check js/data.js
+          node --check js/storage.js
