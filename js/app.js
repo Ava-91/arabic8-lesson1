@@ -125,6 +125,7 @@ function topic(id){
   if(id==="vocabulary")body=`<div class="grid grid-2">${lesson.vocabulary.map(x=>`<div class="card">${ar(x[0])}<p>${x[1]}</p></div>`).join("")}</div>`;
   if(id==="classification")body=`<div class="grid grid-2">${lesson.classification.map(x=>`<div class="card"><div class="kicker"><strong>${x[1]}</strong></div>${ar(x[0])}<p>${x[2]}</p></div>`).join("")}</div>`;
   if(id==="synonyms")body=`<div class="grid grid-2">${lesson.synonymPairs.map(x=>`<div class="card">${ar(x[0]+" = "+x[1])}<p>${x[2]} • ${x[3]}</p></div>`).join("")}${lesson.antonymPairs.map(x=>`<div class="card">${ar(x[0]+" ≠ "+x[1])}<p>متضاد</p></div>`).join("")}</div>`;
+  if(id==="odd-one-out")body=`<div class="grid grid-2">${lesson.oddOneOut.map((x,i)=>`<div class="card"><div class="kicker"><strong>ردیف ${i+1}</strong></div><div class="odd-list">${x.slice(0,4).map(v=>ar(v)).join(" • ")}</div><p class="muted">در تمرین، واژه‌ای را پیدا کن که از نظر معنایی یا دستوری با بقیه هماهنگ نیست.</p></div>`).join("")}</div>`;
   return `<section class="lesson">${header(t.title,t.description)}${body}<div class="topic-actions"><button class="btn btn-primary" data-a="quiz-topic" data-id="${id}">تمرین این موضوع</button><button class="btn btn-secondary" data-a="go" data-r="learn">همهٔ موضوع‌ها</button></div></section>`;
 }
 
