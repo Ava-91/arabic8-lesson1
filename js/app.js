@@ -178,7 +178,7 @@ function selectQuestions(mode,topic=null){
   const count=mode==="exam"?Math.min(20,pool.length):mode==="diagnostic"?Math.min(10,pool.length):Math.min(10,pool.length);
   if(topic)return shuffle(pool).slice(0,count);
   if(mode==="diagnostic"){
-    const groups=Object.groupBy(pool,q=>q.topic);
+    const groups=pool.reduce((acc,q)=>{(acc[q.topic]??=[]).push(q);return acc},{});
     const selected=[];
     const entries=shuffle(Object.entries(groups));
     while(selected.length<count&&entries.length){
