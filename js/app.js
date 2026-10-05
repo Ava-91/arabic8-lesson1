@@ -1,38 +1,314 @@
-import{topics,lesson,questions}from"./data.js";import{loadProgress,saveProgress,resetProgress}from"./storage.js";
-let state={progress:loadProgress(),quiz:null};const app=document.querySelector("#app"),sidebar=document.querySelector("#sidebar"),menu=document.querySelector("#menuButton"),toast=document.querySelector("#toast");
-const topicName=id=>topics.find(t=>t.id===id)?.title||"عمومی",pct=(a,b)=>b?Math.round(a/b*100):0,shuffle=a=>[...a].sort(()=>Math.random()-.5);
+import{topics,lesson,questions}from"./data.js";
+import{loadProgress,saveProgress,resetProgress}from"./storage.js";
+
+let state={progress:loadProgress(),quiz:null};
+const app=document.querySelector("#app");
+const sidebar=document.querySelector("#sidebar");
+const menu=document.querySelector("#menuButton");
+const toast=document.querySelector("#toast");
+
+const topicName=id=>topics.find(t=>t.id===id)?.title||"عمومی";
+const pct=(a,b)=>b?Math.round(a/b*100):0;
+const shuffle=a=>[...a].sort(()=>Math.random()-.5);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function go(r){location.hash=r;sidebar.classList.remove("open");menu.setAttribute("aria-expanded","false")}
-function header(t,d=""){return`<div class="section-head"><div><div class="eyebrow">عربی ۸ • درس اول</div><h2>${t}</h2>${d?`<p>${d}</p>`:""}</div></div>`}
-function save(fn){fn(state.progress);saveProgress(state.progress)}
-function home(){let p=state.progress,c=p.completedTopics.length,n=topics.length;return`<section class="hero"><div class="eyebrow">ابزار تعاملی یادگیری</div><h1>عربی ۸</h1><div class="arabic">اَلدَّرْسُ الأَوَّلُ • مُراجَعَةُ دُروسِ الصَّفِّ السّابِعِ</div><p>${lesson.intro}</p><div class="actions"><button class="btn btn-primary" data-a="go" data-r="diagnostic">شروع یادگیری</button><button class="btn btn-secondary" data-a="go" data-r="learn">مرور آموزش</button></div></section><section class="card"><div class="kicker"><span>پیشرفت آموزش</span><strong>${pct(c,n)}%</strong></div><div class="progress"><span style="width:${pct(c,n)}%"></span></div><p>${c} از ${n} موضوع تکمیل شده است.</p></section><div class="section-head"><h2>امکانات</h2></div><section class="grid grid-3"><article class="card"><div class="card-icon">📚</div><h3>آموزش</h3><p>مطالب را کوتاه و مرحله‌ای مرور کن.</p></article><article class="card"><div class="card-icon">🎮</div><h3>تمرین</h3><p>بعد از یادگیری، خودت را بسنج.</p></article><article class="card"><div class="card-icon">📝</div><h3>آزمون</h3><p>۲۰ سؤال برای سنجش نهایی.</p></article></section>`}
-function diagnostic(){if(state.progress.diagnostic){let d=state.progress.diagnostic;return result("نتیجه مرور اولیه",d.correct,d.total,"این آزمون نمره مدرسه‌ای ندارد.",`<button class="btn btn-primary" data-a="quiz" data-mode="diagnostic">دوباره انجام بده</button><button class="btn btn-secondary" data-a="go" data-r="learn">رفتن به آموزش</button>`)}return quizIntro("مرور اولیه","۱۰ سؤال کوتاه برای پیدا کردن بخش‌هایی که بهتر است دوباره مرور شوند.",10,"diagnostic")}
-function quizIntro(t,d,c,m){return`<section class="hero"><div class="eyebrow">ارزیابی بدون نمره</div><h1>${t}</h1><p>${d}</p><section class="card"><strong>${c} سؤال</strong><p>بعد از هر پاسخ، دلیل درست یا غلط بودن را می‌بینی.</p><button class="btn btn-primary" data-a="quiz" data-mode="${m}">شروع</button></section></section>`}
-function learn(){return`${header("آموزش","هر موضوع را کوتاه بخوان و بعد تمرین کن.")}<section class="grid grid-2">${topics.map((t,i)=>`<article class="card topic-card"><div class="card-icon">${t.icon}</div><div class="kicker"><span>موضوع ${i+1}</span>${state.progress.completedTopics.includes(t.id)?"✓ تکمیل":""}</div><h3>${t.title}</h3><p>${t.description}</p><div class="actions"><button class="btn btn-secondary" data-a="topic" data-id="${t.id}">باز کردن</button></div></article>`).join("")}</section>`}
-function topic(id){let t=topics.find(x=>x.id===id),body="";
-if(id==="reading")body=lesson.textPairs.map(x=>`<div class="example"><div class="arabic">${x.ar}</div><p>${x.fa}</p></div>`).join("")+`<div class="tip">نکته: در ترجمه، اول ساختار جمله را پیدا کن و بعد معنی واژه‌ها را کنار هم بگذار.</div>`;
-if(id==="demonstratives")body=table(["اسم اشاره","کاربرد"],lesson.demonstratives);
-if(id==="number")body=`<div class="grid grid-2">${lesson.numbers.map((x,i)=>`<div class="card"><span class="stat">${i+1}</span><div class="arabic">${x}</div></div>`).join("")}</div>`;
-if(id==="pronouns")body=table(["ضمیر","معنی"],lesson.pronouns);
-if(id==="past")body=`<div class="tip">در فعل ماضی، به فاعل و پایان فعل دقت کن. شکل فعل باید با ضمیر جمله هماهنگ باشد.</div>`+table(["فعل","معنی"],lesson.past);
-if(id==="colors")body=`<div class="grid grid-2">${lesson.colors.map(x=>`<div class="card"><div class="arabic">${x[0]}</div><p>${x[1]}</p></div>`).join("")}</div>`;
-if(id==="days")body=`<div class="grid grid-2">${lesson.days.map((x,i)=>`<div class="card"><span class="muted">${i+1}</span><div class="arabic">${x}</div></div>`).join("")}</div>`;
-if(id==="seasons")body=`<div class="grid grid-2">${lesson.seasons.map(x=>`<div class="card"><div class="arabic">${x[0]}</div><p>${x[1]}</p></div>`).join("")}</div>`;
-if(id==="synonyms")body=`<div class="grid grid-2">${lesson.pairs.map(x=>`<div class="card"><div class="arabic">${x[0]} ↔ ${x[1]}</div><p>${x[2]}</p></div>`).join("")}</div>`;
-return`<section class="lesson">${header(t.title,t.description)}${body}<div class="actions"><button class="btn btn-primary" data-a="quiz-topic" data-id="${id}">تمرین این موضوع</button><button class="btn btn-secondary" data-a="go" data-r="learn">بازگشت</button></div></section>`}
-function table(head,rows){return`<div class="table-wrap"><table><thead><tr>${head.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((v,i)=>`<td class="${i===0?"arabic":""}">${v}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`}
-function practice(){return`${header("تمرین","۱۰ سؤال ترکیبی با بازخورد فوری.")}<section class="card"><h3>آماده‌ای؟</h3><p>موضوع‌های مختلف درس اول در این تمرین ترکیب می‌شوند.</p><button class="btn btn-primary" data-a="quiz" data-mode="practice">شروع تمرین</button></section>`}
-function exam(){let last=state.progress.examAttempts.at(-1);return`${header("آزمون نهایی","۲۰ سؤال از بخش‌های مختلف درس اول.")}<section class="card"><h3>قوانین آزمون</h3><ul><li>۲۰ سؤال</li><li>هر پاسخ درست یک امتیاز دارد.</li><li>پاسخ‌های اشتباه بعداً قابل مرورند.</li></ul><button class="btn btn-primary" data-a="quiz" data-mode="exam">شروع آزمون نهایی</button></section>${last?result("آخرین نتیجه",last.correct,last.total,"",'<button class="btn btn-secondary" data-a="quiz" data-mode="exam">دوباره امتحان بده</button>'):""}`}
-function progress(){let p=state.progress,last=p.examAttempts.at(-1);return`${header("پیشرفت من","نتایج این دستگاه در مرورگر ذخیره می‌شوند.")}<section class="grid grid-3"><div class="card"><div class="muted">موضوع‌های تکمیل‌شده</div><div class="stat">${p.completedTopics.length}/${topics.length}</div></div><div class="card"><div class="muted">آخرین آزمون</div><div class="stat">${last?last.correct+"/20":"—"}</div></div><div class="card"><div class="muted">اشتباه‌های ذخیره‌شده</div><div class="stat">${p.mistakes.length}</div></div></section><div class="section-head"><h2>وضعیت موضوع‌ها</h2></div><section class="grid grid-2">${topics.map(t=>{let s=p.topicScores[t.id];return`<div class="card"><div class="kicker"><strong>${t.title}</strong><span>${s?s.percent+"%":"—"}</span></div><div class="progress"><span style="width:${s?.percent||0}%"></span></div></div>`}).join("")}</section><div class="actions"><button class="btn btn-secondary" data-a="go" data-r="mistakes">مرور اشتباهات</button><button class="btn btn-danger" data-a="reset">پاک کردن پیشرفت</button></div>`}
-function about(){return`${header("درباره پروژه")}<section class="card"><h3>هدف</h3><p>این برنامه برای کمک به دانش‌آموزان پایه هشتم در مرور و یادگیری درس اول عربی طراحی شده است؛ آموزش‌ها به فارسی توضیح داده می‌شوند و تمرین‌ها بازخورد فوری دارند.</p><h3>فناوری</h3><p>HTML، CSS و JavaScript خالص؛ بدون حساب کاربری و بدون سرور. پیشرفت روی همین دستگاه با localStorage ذخیره می‌شود.</p><h3>منبع</h3><p>مبنای آموزشی کتاب «عربی، زبان قرآن ۲» پایه هشتم، چاپ ۱۴۰۵ و ساختار درس اول آن است.</p></section>`}
-function result(t,c,n,note,actions){let p=pct(c,n);return`<section class="card result"><div class="eyebrow">${t}</div><div class="score">${c}/${n}</div><h2>${p>=90?"عالی!":p>=70?"خیلی خوب!":p>=50?"خوب، ولی جای مرور دارد":"وقت یک مرور دوباره است"}</h2><p>${note}</p><div class="progress"><span style="width:${p}%"></span></div><div class="actions" style="justify-content:center">${actions}</div></section>`}
-function startQuiz(mode,topic=null){let pool=questions.filter(q=>!topic||q.topic===topic),count=mode==="exam"?20:mode==="diagnostic"?10:Math.min(10,pool.length);state.quiz={mode,questions:shuffle(pool).slice(0,count),index:0,correct:0,answers:[]};drawQuiz()}
-function drawQuiz(){let z=state.quiz;if(!z){return}let q=z.questions[z.index];if(!q)return finishQuiz();app.innerHTML=`<section class="quiz-shell"><div class="question-meta"><span>${z.mode==="exam"?"آزمون نهایی":z.mode==="diagnostic"?"مرور اولیه":"تمرین"}</span><span>${z.index+1} از ${z.questions.length}</span></div><div class="progress"><span style="width:${z.index/z.questions.length*100}%"></span></div><article class="question-card"><div class="eyebrow">${topicName(q.topic)}</div><h2>${esc(q.q)}</h2><div class="options">${q.options.map((o,i)=>`<button class="option" data-a="answer" data-i="${i}">${esc(o)}</button>`).join("")}</div><div id="feedback"></div></article></section>`;app.focus({preventScroll:true})}
-function answer(i){let z=state.quiz,q=z.questions[z.index],ok=i===q.answer;document.querySelectorAll(".option").forEach(b=>b.disabled=true);document.querySelectorAll(".option")[i].classList.add(ok?"correct":"wrong");document.querySelectorAll(".option")[q.answer].classList.add("correct");if(ok)z.correct++;z.answers.push({id:q.id,topic:q.topic,correct:ok});document.querySelector("#feedback").innerHTML=`<div class="feedback ${ok?"correct":"wrong"}"><strong>${ok?"✓ آفرین!":"✗ هنوز نه"}</strong><span>${esc(q.explanation)}</span><div class="actions"><button class="btn btn-primary" data-a="next">${z.index===z.questions.length-1?"دیدن نتیجه":"سؤال بعدی"}</button></div></div>`}
-function finishQuiz(){let z=state.quiz;if(z.mode==="diagnostic")save(p=>p.diagnostic={correct:z.correct,total:z.questions.length});else save(p=>{if(z.mode==="exam")p.examAttempts.push({correct:z.correct,total:z.questions.length,date:new Date().toISOString()});z.answers.filter(a=>!a.correct).forEach(a=>{if(!p.mistakes.includes(a.id))p.mistakes.push(a.id)});let by={};z.answers.forEach(a=>{by[a.topic]??={correct:0,total:0};by[a.topic].total++;if(a.correct)by[a.topic].correct++});Object.entries(by).forEach(([id,s])=>{p.topicScores[id]={correct:s.correct,total:s.total,percent:pct(s.correct,s.total)};if(z.topic&&z.mode==="practice"&&!p.completedTopics.includes(id))p.completedTopics.push(id)})});let t=z.mode==="diagnostic"?"نتیجه مرور اولیه":z.mode==="exam"?"نتیجه آزمون نهایی":"نتیجه تمرین";app.innerHTML=result(t,z.correct,z.questions.length,z.mode==="diagnostic"?"از این نتیجه برای انتخاب موضوع‌های نیازمند مرور استفاده کن.":"پاسخ‌های اشتباه ذخیره شدند.",`<button class="btn btn-primary" data-a="go" data-r="mistakes">مرور اشتباهات</button><button class="btn btn-secondary" data-a="go" data-r="home">خانه</button>`);state.quiz=null}
-function mistakes(){let qs=questions.filter(q=>state.progress.mistakes.includes(q.id));if(!qs.length)return`${header("اشتباهات من")}<div class="empty">هنوز اشتباهی برای مرور ذخیره نشده است. 🎉</div>`;return`${header("اشتباهات من","سؤال‌هایی که قبلاً اشتباه پاسخ داده‌ای.")}<section class="card"><p>${qs.length} سؤال برای مرور داری.</p><button class="btn btn-primary" data-a="mistake-quiz">شروع مرور</button></section>`}
-function render(){let raw=(location.hash||"#home").slice(1),parts=raw.split("/"),r=parts[0],views={home,diagnostic,learn,practice,exam,progress,about,mistakes};app.innerHTML=r==="topic"&&parts[1]?topic(parts[1]):views[r]?.()||home;document.querySelectorAll("[data-route]").forEach(a=>a.classList.toggle("active",a.dataset.route===r))}
-document.addEventListener("click",e=>{let x=e.target.closest("[data-a]");if(!x)return;let a=x.dataset.a;if(a==="go")go(x.dataset.r);if(a==="quiz")startQuiz(x.dataset.mode);if(a==="quiz-topic")startQuiz("practice",x.dataset.id);if(a==="answer")answer(+x.dataset.i);if(a==="next"){state.quiz.index++;drawQuiz()}if(a==="topic")go("topic/"+x.dataset.id);if(a==="reset"&&confirm("همه پیشرفت این مرورگر پاک شود؟")){state.progress=resetProgress();toast.textContent="پیشرفت پاک شد";toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1800);render()}if(a==="mistake-quiz"){let qs=questions.filter(q=>state.progress.mistakes.includes(q.id));state.quiz={mode:"practice",questions:shuffle(qs),index:0,correct:0,answers:[]};drawQuiz()}});
-document.addEventListener("click",e=>{let x=e.target.closest("[data-a=topic]");if(x)go("topic/"+x.dataset.id)});
-menu.addEventListener("click",()=>{let o=sidebar.classList.toggle("open");menu.setAttribute("aria-expanded",String(o))});
-window.addEventListener("hashchange",render);render();
+const ar=s=>`<span class="arabic" lang="ar" dir="rtl">${esc(s)}</span>`;
+
+function go(route){
+  location.hash=route;
+  closeMenu();
+}
+
+function closeMenu(){
+  sidebar.classList.remove("open");
+  menu.setAttribute("aria-expanded","false");
+}
+
+function persist(mutator){
+  mutator(state.progress);
+  const ok=saveProgress(state.progress);
+  if(!ok)showToast("ذخیره پیشرفت در این مرورگر ممکن نشد.");
+}
+
+function showToast(message){
+  toast.textContent=message;
+  toast.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer=setTimeout(()=>toast.classList.remove("show"),2200);
+}
+
+function header(title,description=""){
+  return `<div class="section-head"><div><div class="eyebrow">عربی ۸ • درس اول</div><h2>${title}</h2>${description?`<p>${description}</p>`:""}</div></div>`;
+}
+
+function home(){
+  const p=state.progress,c=p.completedTopics.length,n=topics.length;
+  const hasDiagnostic=Boolean(p.diagnostic);
+  const last=p.examAttempts.at(-1);
+  const next=hasDiagnostic?"learn":"diagnostic";
+  return `
+  <section class="hero">
+    <div class="eyebrow">ابزار تعاملی یادگیری</div>
+    <h1>عربی ۸</h1>
+    ${ar("اَلدَّرْسُ الأَوَّلُ • مُراجَعَةُ دُروسِ الصَّفِّ السّابِعِ")}
+    <p>${lesson.intro}</p>
+    <div class="actions">
+      <button class="btn btn-primary" data-a="go" data-r="${next}">${hasDiagnostic?"ادامه یادگیری":"شروع یادگیری"}</button>
+      <button class="btn btn-secondary" data-a="go" data-r="learn">مرور آموزش</button>
+    </div>
+  </section>
+  <section class="card progress-card">
+    <div class="kicker"><span>پیشرفت آموزش</span><strong>${pct(c,n)}%</strong></div>
+    <div class="progress" aria-label="پیشرفت آموزش"><span style="width:${pct(c,n)}%"></span></div>
+    <p>${c} از ${n} موضوع تکمیل شده است.</p>
+    ${last?`<div class="mini-result">آخرین آزمون: <strong>${last.correct}/${last.total}</strong></div>`:""}
+  </section>
+  <div class="section-head"><h2>مسیر پیشنهادی</h2></div>
+  <section class="grid grid-3">
+    <article class="card"><div class="card-icon">①</div><h3>اول تشخیص بده</h3><p>۱۰ سؤال بدون نمره برای پیدا کردن بخش‌های ضعیف‌تر.</p><button class="btn btn-secondary" data-a="go" data-r="diagnostic">${hasDiagnostic?"اجرای دوباره":"شروع"} مرور اولیه</button></article>
+    <article class="card"><div class="card-icon">②</div><h3>بعد یاد بگیر</h3><p>هر موضوع را کوتاه بخوان و بلافاصله همان موضوع را تمرین کن.</p><button class="btn btn-secondary" data-a="go" data-r="learn">رفتن به آموزش</button></article>
+    <article class="card"><div class="card-icon">③</div><h3>آخر خودت را بسنج</h3><p>آزمون نهایی، نتیجه و اشتباهاتت را یک‌جا نشان می‌دهد.</p><button class="btn btn-secondary" data-a="go" data-r="exam">آزمون نهایی</button></article>
+  </section>
+  `;
+}
+
+function diagnostic(){
+  if(state.progress.diagnostic){
+    const d=state.progress.diagnostic;
+    return result("نتیجه مرور اولیه",d.correct,d.total,"این آزمون نمره مدرسه‌ای ندارد.",`
+      ${topicBreakdown(d.byTopic||{})}
+      <div class="actions" style="justify-content:center">
+        <button class="btn btn-primary" data-a="quiz" data-mode="diagnostic">دوباره انجام بده</button>
+        <button class="btn btn-secondary" data-a="go" data-r="learn">رفتن به آموزش</button>
+      </div>`);
+  }
+  return quizIntro("مرور اولیه","۱۰ سؤال کوتاه برای پیدا کردن بخش‌هایی که بهتر است دوباره مرور شوند.",10,"diagnostic");
+}
+
+function quizIntro(title,description,count,mode){
+  return `
+  <section class="hero">
+    <div class="eyebrow">ارزیابی بدون نمره</div><h1>${title}</h1><p>${description}</p>
+    <section class="card intro-card">
+      <div class="stat">${count}</div><strong>سؤال</strong>
+      <p>بعد از هر پاسخ، دلیل درست یا غلط بودن را می‌بینی. می‌توانی در پایان اشتباهاتت را مرور کنی.</p>
+      <button class="btn btn-primary" data-a="quiz" data-mode="${mode}">شروع</button>
+    </section>
+  </section>`;
+}
+
+function learn(){
+  return `${header("آموزش","هر موضوع را کوتاه بخوان و بعد همان موضوع را تمرین کن.")}
+  <section class="grid grid-2">
+    ${topics.map((t,i)=>`
+      <article class="card topic-card">
+        <div class="topic-top"><div class="card-icon">${t.icon}</div><span class="topic-number">۰${i+1}</span></div>
+        <div class="kicker"><span>موضوع ${i+1}</span>${state.progress.completedTopics.includes(t.id)?'<span class="complete">✓ تکمیل</span>':""}</div>
+        <h3>${t.title}</h3><p>${t.description}</p>
+        <div class="actions"><button class="btn btn-secondary" data-a="topic" data-id="${t.id}">باز کردن</button></div>
+      </article>`).join("")}
+  </section>`;
+}
+
+function topic(id){
+  const t=topics.find(x=>x.id===id);
+  if(!t)return `${header("موضوع پیدا نشد")}<div class="empty">این بخش وجود ندارد.</div>`;
+  let body="";
+  if(id==="reading")body=lesson.textPairs.map(x=>`<div class="example">${ar(x.ar)}<p>${x.fa}</p></div>`).join("")+`<div class="tip"><strong>نکتهٔ ترجمه</strong><p>اول فعل و ساختار جمله را پیدا کن، بعد معنی واژه‌ها را کنار هم بگذار؛ ترجمهٔ کلمه‌به‌کلمه همیشه بهترین راه نیست.</p></div>`;
+  if(id==="demonstratives")body=table(["اسم اشاره","کاربرد"],lesson.demonstratives);
+  if(id==="number")body=`<div class="grid grid-2">${lesson.numbers.map((x,i)=>`<div class="card"><span class="stat small-stat">${i+1}</span>${ar(x)}</div>`).join("")}</div>`;
+  if(id==="pronouns")body=table(["ضمیر","معنی"],lesson.pronouns);
+  if(id==="past")body=`<div class="tip"><strong>روش تشخیص</strong><p>به ضمیر و پایان فعل دقت کن. در فعل ماضی، پایان‌هایی مثل «ـتُ»، «ـنا»، «ـوا» اطلاعات مهمی دربارهٔ فاعل می‌دهند.</p></div>`+table(["فعل","معنی"],lesson.past);
+  if(id==="colors")body=`<div class="grid grid-2">${lesson.colors.map(x=>`<div class="card">${ar(x[0])}<p>${x[1]}</p></div>`).join("")}</div>`;
+  if(id==="days")body=`<div class="grid grid-2">${lesson.days.map((x,i)=>`<div class="card"><span class="muted">روز ${i+1}</span>${ar(x)}</div>`).join("")}</div>`;
+  if(id==="seasons")body=`<div class="grid grid-2">${lesson.seasons.map(x=>`<div class="card">${ar(x[0])}<p>${x[1]}</p></div>`).join("")}</div>`;
+  if(id==="synonyms")body=`<div class="grid grid-2">${lesson.pairs.map(x=>`<div class="card">${ar(x[0]+" ↔ "+x[1])}<p>${x[2]}</p></div>`).join("")}</div>`;
+  return `<section class="lesson">${header(t.title,t.description)}${body}<div class="topic-actions"><button class="btn btn-primary" data-a="quiz-topic" data-id="${id}">تمرین این موضوع</button><button class="btn btn-secondary" data-a="go" data-r="learn">همهٔ موضوع‌ها</button></div></section>`;
+}
+
+function table(head,rows){
+  return `<div class="table-wrap"><table><thead><tr>${head.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((v,i)=>`<td class="${i===0?"arabic":""}" lang="${i===0?"ar":"fa"}" dir="${i===0?"rtl":"rtl"}">${esc(v)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+
+function practice(){
+  return `${header("تمرین","۱۰ سؤال ترکیبی از موضوع‌های درس اول با بازخورد فوری.")}
+  <section class="card"><h3>یادگیری با پاسخ‌دادن</h3><p>اگر اشتباه کنی، فقط جواب درست را نمی‌بینی؛ دلیلش را هم می‌خوانی.</p><button class="btn btn-primary" data-a="quiz" data-mode="practice">شروع تمرین</button></section>`;
+}
+
+function exam(){
+  const last=state.progress.examAttempts.at(-1);
+  return `${header("آزمون نهایی","۲۰ سؤال ترکیبی برای سنجش آمادگی.")}
+  <section class="card"><h3>قبل از شروع</h3><ul><li>۲۰ سؤال</li><li>هر پاسخ درست یک امتیاز دارد.</li><li>پاسخ‌های اشتباه برای مرور ذخیره می‌شوند.</li><li>بعد از پایان، نتیجه و وضعیت موضوع‌ها را می‌بینی.</li></ul><button class="btn btn-primary" data-a="quiz" data-mode="exam">شروع آزمون نهایی</button></section>
+  ${last?result("آخرین نتیجه",last.correct,last.total,"",`<button class="btn btn-secondary" data-a="quiz" data-mode="exam">دوباره امتحان بده</button>`):""}`;
+}
+
+function progress(){
+  const p=state.progress,last=p.examAttempts.at(-1);
+  return `${header("پیشرفت من","نتایج این دستگاه در مرورگر ذخیره می‌شوند؛ اطلاعات به حساب کاربری یا سرور ارسال نمی‌شود.")}
+  <section class="grid grid-3">
+    <div class="card"><div class="muted">موضوع‌های تکمیل‌شده</div><div class="stat">${p.completedTopics.length}/${topics.length}</div></div>
+    <div class="card"><div class="muted">آخرین آزمون</div><div class="stat">${last?last.correct+"/"+last.total:"—"}</div></div>
+    <div class="card"><div class="muted">اشتباه‌های ذخیره‌شده</div><div class="stat">${p.mistakes.length}</div></div>
+  </section>
+  <div class="section-head"><h2>وضعیت موضوع‌ها</h2></div>
+  <section class="grid grid-2">${topics.map(t=>{const s=p.topicScores[t.id];return`<div class="card"><div class="kicker"><strong>${t.title}</strong><span>${s?s.percent+"%":"شروع نشده"}</span></div><div class="progress"><span style="width:${s?.percent||0}%"></span></div>${s?`<small class="muted">${s.correct} پاسخ درست از ${s.total}</small>`:""}</div>`}).join("")}</section>
+  <div class="actions"><button class="btn btn-secondary" data-a="go" data-r="mistakes">مرور اشتباهات (${p.mistakes.length})</button><button class="btn btn-danger" data-a="reset">پاک کردن پیشرفت</button></div>`;
+}
+
+function about(){
+  return `${header("درباره پروژه")}
+  <section class="card">
+    <h3>هدف</h3><p>این برنامه برای کمک به دانش‌آموزان پایه هشتم در مرور و یادگیری درس اول عربی طراحی شده است؛ آموزش‌ها به فارسی توضیح داده می‌شوند و تمرین‌ها بازخورد فوری دارند.</p>
+    <h3>فناوری</h3><p>HTML، CSS و JavaScript خالص؛ بدون حساب کاربری، backend یا database. پیشرفت فقط در localStorage همین مرورگر ذخیره می‌شود.</p>
+    <h3>منبع</h3><p>مبنای آموزشی کتاب «عربی، زبان قرآن ۲» پایه هشتم، چاپ ۱۴۰۵ و ساختار درس اول آن است. محتوای نهایی باید با نسخهٔ کتاب و تدریس مدرسه تطبیق داده شود.</p>
+  </section>`;
+}
+
+function result(title,correct,total,note,extra=""){
+  const score=pct(correct,total);
+  return `<section class="card result"><div class="eyebrow">${title}</div><div class="score">${correct}/${total}</div><h2>${score>=90?"عالی!":score>=70?"خیلی خوب!":score>=50?"خوب، ولی جای مرور دارد":"وقت یک مرور دوباره است"}</h2><p>${note}</p><div class="progress"><span style="width:${score}%"></span></div>${extra}</section>`;
+}
+
+function topicBreakdown(byTopic){
+  const rows=Object.entries(byTopic).map(([id,s])=>`<div class="breakdown-row"><span>${topicName(id)}</span><strong>${s.correct}/${s.total}</strong></div>`).join("");
+  return rows?`<div class="breakdown"><h3>کجاها را بیشتر مرور کنم؟</h3>${rows}</div>`:"";
+}
+
+function selectQuestions(mode,topic=null){
+  const pool=questions.filter(q=>!topic||q.topic===topic);
+  const count=mode==="exam"?Math.min(20,pool.length):mode==="diagnostic"?Math.min(10,pool.length):Math.min(10,pool.length);
+  if(topic)return shuffle(pool).slice(0,count);
+  if(mode==="diagnostic"){
+    const groups=pool.reduce((acc,q)=>{(acc[q.topic]??=[]).push(q);return acc},{});
+    const selected=[];
+    const entries=shuffle(Object.entries(groups));
+    while(selected.length<count&&entries.length){
+      for(const [,items] of entries){
+        if(selected.length>=count)break;
+        const remaining=items.filter(q=>!selected.includes(q));
+        if(remaining.length)selected.push(remaining[Math.floor(Math.random()*remaining.length)]);
+      }
+    }
+    return selected;
+  }
+  return shuffle(pool).slice(0,count);
+}
+
+function startQuiz(mode,topic=null){
+  const selected=selectQuestions(mode,topic);
+  if(!selected.length){showToast("برای این موضوع هنوز سؤال ثبت نشده است.");return}
+  state.quiz={mode,topic,questions:selected,index:0,correct:0,answers:[]};
+  drawQuiz();
+}
+
+function drawQuiz(){
+  const z=state.quiz;
+  if(!z)return;
+  const q=z.questions[z.index];
+  if(!q)return finishQuiz();
+  const progress=pct(z.index,z.questions.length);
+  app.innerHTML=`<section class="quiz-shell">
+    <div class="quiz-top"><button class="btn btn-secondary btn-small" data-a="quit-quiz">خروج</button><div class="question-meta"><span>${z.mode==="exam"?"آزمون نهایی":z.mode==="diagnostic"?"مرور اولیه":"تمرین"}</span><span>سؤال ${z.index+1} از ${z.questions.length}</span></div></div>
+    <div class="progress" aria-label="پیشرفت آزمون"><span style="width:${progress}%"></span></div>
+    <article class="question-card" aria-live="polite">
+      <div class="eyebrow">${topicName(q.topic)}</div>
+      <h2>${esc(q.q)}</h2>
+      <div class="options" role="group" aria-label="گزینه‌های پاسخ">${q.options.map((o,i)=>`<button class="option" data-a="answer" data-i="${i}">${esc(o)}</button>`).join("")}</div>
+      <div id="feedback"></div>
+    </article>
+  </section>`;
+  app.focus({preventScroll:true});
+}
+
+function answer(index){
+  const z=state.quiz,q=z.questions[z.index],ok=index===q.answer;
+  const options=[...document.querySelectorAll(".option")];
+  options.forEach(b=>b.disabled=true);
+  if(options[index])options[index].classList.add(ok?"correct":"wrong");
+  if(options[q.answer])options[q.answer].classList.add("correct");
+  if(ok)z.correct++;
+  z.answers.push({id:q.id,topic:q.topic,correct:ok});
+  document.querySelector("#feedback").innerHTML=`<div class="feedback ${ok?"correct":"wrong"}"><strong>${ok?"✓ پاسخ درست":"✗ پاسخ درست نیست"}</strong><p>${esc(q.explanation)}</p><div class="actions"><button class="btn btn-primary" data-a="next">${z.index===z.questions.length-1?"دیدن نتیجه":"سؤال بعدی"}</button></div></div>`;
+}
+
+function finishQuiz(){
+  const z=state.quiz;
+  if(!z)return;
+  const by={};
+  z.answers.forEach(a=>{
+    by[a.topic]??={correct:0,total:0};
+    by[a.topic].total++;
+    if(a.correct)by[a.topic].correct++;
+  });
+  if(z.mode==="diagnostic"){
+    persist(p=>p.diagnostic={correct:z.correct,total:z.questions.length,byTopic:by,date:new Date().toISOString()});
+  }else{
+    persist(p=>{
+      if(z.mode==="exam")p.examAttempts.push({correct:z.correct,total:z.questions.length,date:new Date().toISOString(),byTopic:by});
+      z.answers.forEach(a=>{
+        if(!a.correct&&!p.mistakes.includes(a.id))p.mistakes.push(a.id);
+        if(a.correct)p.mistakes=p.mistakes.filter(id=>id!==a.id);
+      });
+      Object.entries(by).forEach(([id,s])=>{
+        p.topicScores[id]={correct:s.correct,total:s.total,percent:pct(s.correct,s.total)};
+        if(z.topic&&!p.completedTopics.includes(id)&&s.correct===s.total)p.completedTopics.push(id);
+      });
+    });
+  }
+  const title=z.mode==="diagnostic"?"نتیجه مرور اولیه":z.mode==="exam"?"نتیجه آزمون نهایی":"نتیجه تمرین";
+  const note=z.mode==="diagnostic"?"از این نتیجه برای انتخاب موضوع‌های نیازمند مرور استفاده کن.":"پاسخ‌های اشتباه برای مرور بعدی ذخیره شدند.";
+  app.innerHTML=result(title,z.correct,z.questions.length,note,`${topicBreakdown(by)}<div class="actions" style="justify-content:center"><button class="btn btn-primary" data-a="go" data-r="mistakes">مرور اشتباهات</button><button class="btn btn-secondary" data-a="go" data-r="home">خانه</button></div>`);
+  state.quiz=null;
+}
+
+function mistakes(){
+  const qs=questions.filter(q=>state.progress.mistakes.includes(q.id));
+  if(!qs.length)return `${header("اشتباهات من")}<div class="empty"><strong>اینجا خالی است. 🎉</strong><p>فعلاً اشتباهی برای مرور ذخیره نشده.</p><button class="btn btn-secondary" data-a="go" data-r="learn">رفتن به آموزش</button></div>`;
+  return `${header("اشتباهات من","سؤال‌هایی که قبلاً اشتباه پاسخ داده‌ای و هنوز دوباره درست حلشان نکرده‌ای.")}
+    <section class="card"><div class="stat">${qs.length}</div><p>سؤال برای مرور داری.</p><button class="btn btn-primary" data-a="mistake-quiz">شروع مرور</button></section>`;
+}
+
+function render(){
+  const raw=(location.hash||"#home").slice(1);
+  const parts=raw.split("/");
+  const route=parts[0];
+  const views={home,diagnostic,learn,practice,exam,progress,about,mistakes};
+  app.innerHTML=route==="topic"&&parts[1]?topic(parts[1]):views[route]?.()||home;
+  document.querySelectorAll("[data-route]").forEach(a=>{
+    const active=route==="topic"?a.dataset.route==="learn":a.dataset.route===route;
+    a.classList.toggle("active",active);
+  });
+  app.focus({preventScroll:true});
+}
+
+document.addEventListener("click",e=>{
+  const x=e.target.closest("[data-a]");
+  if(!x)return;
+  const a=x.dataset.a;
+  if(a==="go")go(x.dataset.r);
+  if(a==="quiz")startQuiz(x.dataset.mode);
+  if(a==="quiz-topic")startQuiz("practice",x.dataset.id);
+  if(a==="answer")answer(Number(x.dataset.i));
+  if(a==="next"){state.quiz.index++;drawQuiz()}
+  if(a==="topic")go("topic/"+x.dataset.id);
+  if(a==="quit-quiz"){
+    if(confirm("آزمون فعلی متوقف شود؟ پاسخ‌های این دور ذخیره نمی‌شوند.")){state.quiz=null;go("home")}
+  }
+  if(a==="reset"&&confirm("همه پیشرفت این مرورگر پاک شود؟")){
+    state.progress=resetProgress();
+    showToast("پیشرفت پاک شد");
+    render();
+  }
+  if(a==="mistake-quiz"){
+    const qs=questions.filter(q=>state.progress.mistakes.includes(q.id));
+    state.quiz={mode:"practice",topic:null,questions:shuffle(qs),index:0,correct:0,answers:[]};
+    drawQuiz();
+  }
+});
+
+menu.addEventListener("click",()=>{
+  const open=sidebar.classList.toggle("open");
+  menu.setAttribute("aria-expanded",String(open));
+});
+
+window.addEventListener("hashchange",render);
+render();
