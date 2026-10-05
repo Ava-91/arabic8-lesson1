@@ -16,7 +16,7 @@
 <div class="app-shell">
 <header class="topbar">
 <a class="brand" href="#home"><span class="brand-mark">ع</span><span><strong>عربی ۸</strong><small>درس اول</small></span></a>
-<button class="icon-button" id="menuButton" type="button" aria-label="باز کردن منو" aria-expanded="false">☰</button>
+<button class="icon-button" id="menuButton" type="button" aria-label="باز کردن منو" aria-expanded="false" aria-controls="sidebar">☰</button>
 </header>
 <aside class="sidebar" id="sidebar" aria-label="ناوبری اصلی">
 <nav>
@@ -30,7 +30,7 @@
 </nav>
 <div class="sidebar-note"><span>درس ۱</span><strong>مُراجَعَةُ دُروسِ الصَّفِّ السّابِعِ</strong></div>
 </aside>
-<main id="app" class="main" tabindex="-1"></main>
+<main id="app" class="main" tabindex="-1" aria-live="polite"></main>
 </div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script type="module" src="js/app.js"></script>
