@@ -262,7 +262,7 @@ function finishQuiz(){
         const total=previous.total+s.total;
         const correct=previous.correct+s.correct;
         p.topicScores[id]={correct,total,percent:pct(correct,total)};
-        if(z.topic&&!p.completedTopics.includes(id)&&s.correct===s.total&&s.total>=3)p.completedTopics.push(id);
+        if(z.topic&&!p.completedTopics.includes(id)&&s.correct===s.total&&s.total>=2)p.completedTopics.push(id);
       });
     });
   }
