@@ -122,7 +122,9 @@ function topic(id){
   if(id==="colors")body=`<div class="grid grid-2">${lesson.colors.map(x=>`<div class="card">${ar(x[0])}<p>${x[1]}</p></div>`).join("")}</div>`;
   if(id==="days")body=`<div class="grid grid-2">${lesson.days.map((x,i)=>`<div class="card"><span class="muted">روز ${i+1}</span>${ar(x)}</div>`).join("")}</div>`;
   if(id==="seasons")body=`<div class="grid grid-2">${lesson.seasons.map(x=>`<div class="card">${ar(x[0])}<p>${x[1]}</p></div>`).join("")}</div>`;
-  if(id==="synonyms")body=`<div class="grid grid-2">${lesson.pairs.map(x=>`<div class="card">${ar(x[0]+" ↔ "+x[1])}<p>${x[2]}</p></div>`).join("")}</div>`;
+  if(id==="vocabulary")body=`<div class="grid grid-2">${lesson.vocabulary.map(x=>`<div class="card">${ar(x[0])}<p>${x[1]}</p></div>`).join("")}</div>`;
+  if(id==="classification")body=`<div class="grid grid-2">${lesson.classification.map(x=>`<div class="card"><div class="kicker"><strong>${x[1]}</strong></div>${ar(x[0])}<p>${x[2]}</p></div>`).join("")}</div>`;
+  if(id==="synonyms")body=`<div class="grid grid-2">${lesson.synonymPairs.map(x=>`<div class="card">${ar(x[0]+" = "+x[1])}<p>${x[2]} • ${x[3]}</p></div>`).join("")}${lesson.antonymPairs.map(x=>`<div class="card">${ar(x[0]+" ≠ "+x[1])}<p>متضاد</p></div>`).join("")}</div>`;
   return `<section class="lesson">${header(t.title,t.description)}${body}<div class="topic-actions"><button class="btn btn-primary" data-a="quiz-topic" data-id="${id}">تمرین این موضوع</button><button class="btn btn-secondary" data-a="go" data-r="learn">همهٔ موضوع‌ها</button></div></section>`;
 }
 
@@ -185,18 +187,23 @@ function selectQuestions(mode,topic=null){
   const pool=questions.filter(q=>!topic||q.topic===topic);
   const count=mode==="exam"?Math.min(20,pool.length):mode==="diagnostic"?Math.min(10,pool.length):Math.min(10,pool.length);
   if(topic)return shuffle(pool).slice(0,count);
+  const groups=pool.reduce((acc,q)=>{(acc[q.topic]??=[]).push(q);return acc},{});
+  const entries=shuffle(Object.entries(groups));
   if(mode==="diagnostic"){
-    const groups=pool.reduce((acc,q)=>{(acc[q.topic]??=[]).push(q);return acc},{});
+    // Diagnostic is intentionally broad: sample one question from each of up to 10 topics,
+    // then fill any remaining slots without duplicating a question.
     const selected=[];
-    const entries=shuffle(Object.entries(groups));
-    while(selected.length<count&&entries.length){
-      for(const [,items] of entries){
-        if(selected.length>=count)break;
-        const remaining=items.filter(q=>!selected.includes(q));
-        if(remaining.length)selected.push(remaining[Math.floor(Math.random()*remaining.length)]);
-      }
+    for(const [,items] of entries.slice(0,count)){
+      selected.push(items[Math.floor(Math.random()*items.length)]);
     }
-    return selected;
+    const rest=shuffle(pool.filter(q=>!selected.includes(q)));
+    return selected.concat(rest).slice(0,count);
+  }
+  if(mode==="exam"){
+    // The final exam must touch every topic before using extra random questions.
+    const selected=[];
+    for(const [,items] of entries)selected.push(items[Math.floor(Math.random()*items.length)]);
+    return selected.concat(shuffle(pool.filter(q=>!selected.includes(q)))).slice(0,count);
   }
   return shuffle(pool).slice(0,count);
 }
