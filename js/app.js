@@ -16,6 +16,7 @@ const ar=s=>`<span class="arabic" lang="ar" dir="rtl">${esc(s)}</span>`;
 function go(route){
   location.hash=route;
   closeMenu();
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 
 function closeMenu(){
@@ -169,8 +170,15 @@ function result(title,correct,total,note,extra=""){
 }
 
 function topicBreakdown(byTopic){
-  const rows=Object.entries(byTopic).map(([id,s])=>`<div class="breakdown-row"><span>${topicName(id)}</span><strong>${s.correct}/${s.total}</strong></div>`).join("");
-  return rows?`<div class="breakdown"><h3>کجاها را بیشتر مرور کنم؟</h3>${rows}</div>`:"";
+  const entries=Object.entries(byTopic).sort((a,b)=>pct(a[1].correct,a[1].total)-pct(b[1].correct,b[1].total));
+  const rows=entries.map(([id,s])=>{
+    const score=pct(s.correct,s.total);
+    const cls=score<70?"weak":score===100?"strong":"";
+    return `<div class="breakdown-row ${cls}"><span>${topicName(id)}</span><strong>${s.correct}/${s.total} • ${score}%</strong></div>`;
+  }).join("");
+  const weak=entries.filter(([,s])=>pct(s.correct,s.total)<70);
+  const advice=weak.length?`<p class="recommendation">پیشنهاد مرور: <strong>${weak.slice(0,3).map(([id])=>topicName(id)).join("، ")}</strong></p>`:"<p class=\"recommendation good\">هیچ موضوعی زیر ۷۰٪ نیست؛ مرور کلی بعدی کافی است.</p>";
+  return rows?`<div class="breakdown"><h3>نقاط نیازمند مرور</h3>${advice}${rows}</div>`:"";
 }
 
 function selectQuestions(mode,topic=null){
@@ -205,7 +213,7 @@ function drawQuiz(){
   if(!z)return;
   const q=z.questions[z.index];
   if(!q)return finishQuiz();
-  const progress=pct(z.index,z.questions.length);
+  const progress=pct(z.index+1,z.questions.length);
   app.innerHTML=`<section class="quiz-shell">
     <div class="quiz-top"><button class="btn btn-secondary btn-small" data-a="quit-quiz">خروج</button><div class="question-meta"><span>${z.mode==="exam"?"آزمون نهایی":z.mode==="diagnostic"?"مرور اولیه":"تمرین"}</span><span>سؤال ${z.index+1} از ${z.questions.length}</span></div></div>
     <div class="progress" aria-label="پیشرفت آزمون"><span style="width:${progress}%"></span></div>
@@ -217,6 +225,7 @@ function drawQuiz(){
     </article>
   </section>`;
   app.focus({preventScroll:true});
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 
 function answer(index){
@@ -249,8 +258,11 @@ function finishQuiz(){
         if(a.correct)p.mistakes=p.mistakes.filter(id=>id!==a.id);
       });
       Object.entries(by).forEach(([id,s])=>{
-        p.topicScores[id]={correct:s.correct,total:s.total,percent:pct(s.correct,s.total)};
-        if(z.topic&&!p.completedTopics.includes(id)&&s.correct===s.total)p.completedTopics.push(id);
+        const previous=p.topicScores[id]||{correct:0,total:0};
+        const total=previous.total+s.total;
+        const correct=previous.correct+s.correct;
+        p.topicScores[id]={correct,total,percent:pct(correct,total)};
+        if(z.topic&&!p.completedTopics.includes(id)&&s.correct===s.total&&s.total>=2)p.completedTopics.push(id);
       });
     });
   }
@@ -258,6 +270,7 @@ function finishQuiz(){
   const note=z.mode==="diagnostic"?"از این نتیجه برای انتخاب موضوع‌های نیازمند مرور استفاده کن.":"پاسخ‌های اشتباه برای مرور بعدی ذخیره شدند.";
   app.innerHTML=result(title,z.correct,z.questions.length,note,`${topicBreakdown(by)}<div class="actions" style="justify-content:center"><button class="btn btn-primary" data-a="go" data-r="mistakes">مرور اشتباهات</button><button class="btn btn-secondary" data-a="go" data-r="home">خانه</button></div>`);
   state.quiz=null;
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 
 function mistakes(){
@@ -288,6 +301,7 @@ document.addEventListener("click",e=>{
   if(a==="quiz")startQuiz(x.dataset.mode);
   if(a==="quiz-topic")startQuiz("practice",x.dataset.id);
   if(a==="answer")answer(Number(x.dataset.i));
+  if(x.matches("[data-route]"))closeMenu();
   if(a==="next"){state.quiz.index++;drawQuiz()}
   if(a==="topic")go("topic/"+x.dataset.id);
   if(a==="quit-quiz"){
@@ -303,6 +317,12 @@ document.addEventListener("click",e=>{
     state.quiz={mode:"practice",topic:null,questions:shuffle(qs),index:0,correct:0,answers:[]};
     drawQuiz();
   }
+});
+
+document.addEventListener("click",e=>{
+  if(!sidebar.classList.contains("open"))return;
+  if(e.target.closest("#menuButton")||e.target.closest("#sidebar"))return;
+  closeMenu();
 });
 
 menu.addEventListener("click",()=>{
