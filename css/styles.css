@@ -142,3 +142,6 @@ body{background:radial-gradient(circle at 78% -10%,rgba(97,175,239,.07),transpar
 }
 @media(max-width:420px){.topic-actions{grid-template-columns:1fr}.question-card{padding:1rem}.option{min-height:56px}}
 @media(min-width:800px){.main{padding-bottom:5rem}}
+
+.path-card{position:relative;padding-top:1.35rem}.path-card .step-number{font-size:1.1rem;font-weight:800;color:var(--accent-strong);letter-spacing:.04em;margin-bottom:.55rem}
+.progress-card{background:linear-gradient(145deg,var(--surface),var(--surface-soft))}
