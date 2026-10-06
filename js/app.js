@@ -23,7 +23,7 @@ function home(){
   const last=p.examAttempts.at(-1);
   const has=Boolean(p.diagnostic);
   return `<section class="hero"><div class="eyebrow">درس اول · مرور پایه هفتم</div><h1>عربی ۸</h1>${ar(lesson.title)}<p class="intro">${lesson.intro}</p><div class="actions"><button class="btn btn-primary" data-a="go" data-r="${has?"learn":"diagnostic"}">${has?"ادامهٔ یادگیری":"شروع مرور"}</button><button class="btn btn-secondary" data-a="go" data-r="learn">دیدن درس‌ها</button></div></section>
-  <section class="progress-strip"><span class="number">${mastered}</span><div><strong>موضوع مسلط</strong><p class="quiet">از ${topics.length} موضوع</p></div><div class="progress"><span style="width:${pct(mastered,topics.length)}%"></span></div>${last?`<span class="quiet">آزمون ${last.correct}/${last.total}</span>`:""}</section>
+  <section class="progress-strip"><span class="number">${mastered}</span><div><strong>موضوع مسلط</strong><p class="quiet">از ${topics.length} موضوع</p></div><div class="progress"><span style="width:${pct(mastered,topics.length)}%"></span></div>${last?'<span class="quiet">آزمون '+last.correct+"/"+last.total+"</span>":""}</section>
   <div class="section-head"><h2>چهار قدم ساده</h2><p>اول ببین چه بلدی، بعد بخوان و تمرین کن، و آخر خودت را بسنج.</p></div><section class="lesson-path">
   ${path("۱","مرور اولیه","۱۰ سؤال کوتاه؛ بدون نمرهٔ مدرسه‌ای.","diagnostic",has?"دوباره":"شروع")}
   ${path("۲","درس‌ها","متن، اسم اشاره، ماضی، عددها، رنگ‌ها و بقیهٔ نکته‌ها.","learn","باز کردن")}
