@@ -67,8 +67,8 @@ function progress(){
     ? `<div class="section-head"><h2>اول این‌ها را مرور کن</h2></div><div class="word-grid">${review.slice(0,4).map(t=>'<div class="word"><strong>'+t.title+'</strong><p>آخرین پاسخ‌ها نشان می‌دهند که این بخش هنوز جای تمرین دارد.</p><button class="btn btn-secondary btn-small" data-a="topic" data-id="'+t.id+'">مرور</button></div>').join("")}</div>`
     : '<div class="tip"><strong>فعلاً موضوعی زیر ۷۰٪ نیست.</strong><p>یک مرور کوتاه و بعد آزمون نهایی کافی است.</p></div>';
   const rows=topics.map(t=>{
-    const status=mastery(t.id),score=recentScore(t.id);
-    return '<div class="progress-row"><strong>'+t.title+'</strong><div class="progress"><span style="width:'+(score||0)+'%"></span></div><small>'+status+(score!==null?" · "+score+"٪":"")+"</small></div>";
+    const status=mastery(t.id),score=recentScore(t.id),value=score||0;
+    return '<div class="progress-row"><strong>'+t.title+'</strong><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+value+'" aria-label="'+esc(t.title)+'"><span style="width:'+value+'%"></span></div><small>'+status+(score!==null?" · "+score+"٪":"")+"</small></div>";
   }).join("");
   return header("دفتر پیشرفت","به جای نمودارهای شلوغ، اینجا می‌بینی چه چیزهایی را یاد گرفته‌ای و چه چیزهایی ارزش مرور دارند.")+
     '<div class="stats-line"><div><span class="stat">'+mastered.length+'</span><span class="stat-label">مسلط</span></div><div><span class="stat">'+review.length+'</span><span class="stat-label">نیازمند مرور</span></div><div><span class="stat">'+p.mistakes.length+'</span><span class="stat-label">اشتباه ذخیره‌شده</span></div><div><span class="stat">'+(last?last.correct+"/"+last.total:"—")+'</span><span class="stat-label">آخرین آزمون</span></div></div>'+
