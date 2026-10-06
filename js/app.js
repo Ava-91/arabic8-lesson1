@@ -1,14 +1,13 @@
 import{topics,lesson,questions}from"./data.js";
 import{loadProgress,saveProgress,resetProgress}from"./storage.js";
 let state={progress:loadProgress(),quiz:null,dialogAction:null};
-const app=document.querySelector("#app"),sidebar=document.querySelector("#sidebar"),menu=document.querySelector("#menuButton"),toast=document.querySelector("#toast"),dialog=document.querySelector("#dialog");
+const app=document.querySelector("#app"),sidebar=document.querySelector("#sidebar"),toast=document.querySelector("#toast"),dialog=document.querySelector("#dialog"),topbar=document.querySelector(".topbar"),mobileNav=document.querySelector("#mobileNav");
 const topicName=id=>topics.find(t=>t.id===id)?.title||"عمومی";
 const pct=(a,b)=>b?Math.round(a/b*100):0;
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ar=s=>'<span class="arabic" lang="ar" dir="rtl">'+esc(s)+"</span>";
-function go(route){location.hash=route;closeMenu();window.scrollTo({top:0,behavior:"smooth"})}
-function closeMenu(){sidebar.classList.remove("open");menu.setAttribute("aria-expanded","false")}
+function go(route){location.hash=route;window.scrollTo({top:0,behavior:"smooth"})}
 function persist(fn){fn(state.progress);if(!saveProgress(state.progress))showToast("ذخیرهٔ پیشرفت در این مرورگر ممکن نشد.")}
 function showToast(message){toast.textContent=message;toast.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>toast.classList.remove("show"),2200)}
 function header(title,desc=""){return '<div class="section-head"><div><div class="eyebrow">عربی ۸ · درس اول</div><h2>'+title+"</h2>"+(desc?"<p>"+desc+"</p>":"")+"</div></div>"}
@@ -122,6 +121,6 @@ function closeDialog(){dialog.hidden=true;state.dialogAction=null}
 function render(){const raw=(location.hash||"#home").slice(1),parts=raw.split("/"),route=parts[0],views={home,diagnostic,learn,practice,exam,progress,mistakes};app.innerHTML=route==="topic"&&parts[1]?topic(parts[1]):views[route]?.()||home;document.querySelectorAll("[data-route]").forEach(a=>a.classList.toggle("active",a.dataset.route===route||(route==="topic"&&a.dataset.route==="learn")));app.focus({preventScroll:true})}
 document.addEventListener("click",e=>{const x=e.target.closest("[data-a]");if(!x)return;const a=x.dataset.a;
  if(a==="go")go(x.dataset.r);else if(a==="quiz")startQuiz(x.dataset.mode);else if(a==="quiz-topic")startQuiz("practice",x.dataset.id);else if(a==="answer")answer(Number(x.dataset.i));else if(a==="topic")go("topic/"+x.dataset.id);else if(a==="next"){state.quiz.index++;drawQuiz()}else if(a==="quit-quiz")openDialog("quit");else if(a==="dialog-cancel")closeDialog();else if(a==="dialog-confirm"){const action=state.dialogAction;closeDialog();if(action==="reset"){state.progress=resetProgress();showToast("پیشرفت پاک شد");render()}else{state.quiz=null;go("home")}}else if(a==="reset")openDialog("reset");else if(a==="mistake-quiz"){const qs=questions.filter(q=>state.progress.mistakes.includes(q.id));state.quiz={mode:"practice",topic:null,questions:shuffle(qs),index:0,correct:0,answers:[]};drawQuiz()}});
-document.addEventListener("click",e=>{if(sidebar.classList.contains("open")&&!e.target.closest("#menuButton")&&!e.target.closest("#sidebar"))closeMenu()});
-menu.addEventListener("click",()=>{const open=sidebar.classList.toggle("open");menu.setAttribute("aria-expanded",String(open))});
+let lastScrollY=window.scrollY;
+window.addEventListener("scroll",()=>{const y=window.scrollY;if(y<=12){topbar?.classList.remove("scroll-hidden");mobileNav?.classList.remove("scroll-hidden")}else if(y>lastScrollY+6){topbar?.classList.add("scroll-hidden");mobileNav?.classList.add("scroll-hidden")}else if(y<lastScrollY-6){topbar?.classList.remove("scroll-hidden");mobileNav?.classList.remove("scroll-hidden")}lastScrollY=y},{passive:true});
 window.addEventListener("hashchange",render);render();
