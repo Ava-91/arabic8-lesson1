@@ -112,3 +112,6 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(97,175,239,.65);outl
 @media(prefers-reduced-motion:reduce){
   *{scroll-behavior:auto!important;transition:none!important}
 }
+
+
+.visual-card img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain;background:#f4f1e8;border-radius:14px;border:1px solid var(--border);margin:0 0 1rem}.visual-card .example{margin-top:.5rem}.visual-card .example p{margin:.5rem 0 0}.visual-card img+ .example{padding-top:.25rem}
