@@ -65,9 +65,9 @@ function home(){
   </section>
   <div class="section-head"><h2>مسیر پیشنهادی</h2></div>
   <section class="grid grid-3">
-    <article class="card"><div class="card-icon">①</div><h3>اول تشخیص بده</h3><p>۱۰ سؤال بدون نمره برای پیدا کردن بخش‌های ضعیف‌تر.</p><button class="btn btn-secondary" data-a="go" data-r="diagnostic">${hasDiagnostic?"اجرای دوباره":"شروع"} مرور اولیه</button></article>
-    <article class="card"><div class="card-icon">②</div><h3>بعد یاد بگیر</h3><p>هر موضوع را کوتاه بخوان و بلافاصله همان موضوع را تمرین کن.</p><button class="btn btn-secondary" data-a="go" data-r="learn">رفتن به آموزش</button></article>
-    <article class="card"><div class="card-icon">③</div><h3>آخر خودت را بسنج</h3><p>آزمون نهایی، نتیجه و اشتباهاتت را یک‌جا نشان می‌دهد.</p><button class="btn btn-secondary" data-a="go" data-r="exam">آزمون نهایی</button></article>
+    <article class="card path-card"><div class="step-number">۰۱</div><h3>اول تشخیص بده</h3><p>۱۰ سؤال بدون نمره برای پیدا کردن بخش‌های ضعیف‌تر.</p><button class="btn btn-secondary" data-a="go" data-r="diagnostic">${hasDiagnostic?"اجرای دوباره":"شروع"} مرور اولیه</button></article>
+    <article class="card path-card"><div class="step-number">۰۲</div><h3>بعد یاد بگیر</h3><p>هر موضوع را کوتاه بخوان و بلافاصله همان موضوع را تمرین کن.</p><button class="btn btn-secondary" data-a="go" data-r="learn">رفتن به آموزش</button></article>
+    <article class="card path-card"><div class="step-number">۰۳</div><h3>آخر خودت را بسنج</h3><p>آزمون نهایی، نتیجه و اشتباهاتت را یک‌جا نشان می‌دهد.</p><button class="btn btn-secondary" data-a="go" data-r="exam">آزمون نهایی</button></article>
   </section>
   `;
 }
