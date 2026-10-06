@@ -18,16 +18,19 @@ function mastery(id){const r=recentScore(id),n=recent(id).length;if(r===null)ret
 function statusClass(s){return s==="مسلط"?"mastered":s==="نیاز به مرور"?"review":""}
 
 function home(){
- const p=state.progress,mastered=topics.filter(t=>mastery(t.id)==="مسلط").length,last=p.examAttempts.at(-1),has=Boolean(p.diagnostic);
- return '<section class="hero"><div class="eyebrow">درس اول · مرور پایه هفتم</div><h1>عربی ۸</h1>'+ar(lesson.title)+'<p class="intro">'+lesson.intro+'</p><div class="actions"><button class="btn btn-primary" data-a="go" data-r="'+(has?"learn":"diagnostic")+'">'+(has?"ادامهٔ یادگیری":"شروع مرور")+'</button><button class="btn btn-secondary" data-a="go" data-r="learn">دیدن درس‌ها</button></div></section>'+
- '<section class="progress-strip"><span class="number">'+mastered+'</span><div><strong>موضوع مسلط</strong><p class="quiet">از '+topics.length+" موضوع</p></div><div class="progress"><span style="width:"+pct(mastered,topics.length)+'%"></span></div>'+(last?'<span class="quiet">آزمون '+last.correct+"/"+last.total+"</span>":"")+"</section>"+
- '<div class="section-head"><h2>چهار قدم ساده</h2><p>اول ببین چه بلدی، بعد بخوان و تمرین کن، و آخر خودت را بسنج.</p></div><section class="lesson-path">'+
- path("۱","مرور اولیه","۱۰ سؤال کوتاه؛ بدون نمرهٔ مدرسه‌ای.","diagnostic",has?"دوباره":"شروع")+
- path("۲","درس‌ها","متن، اسم اشاره، ماضی، عددها، رنگ‌ها و بقیهٔ نکته‌ها.","learn","باز کردن")+
- path("۳","تمرین","پاسخ بده و همان لحظه دلیل جواب را ببین.","practice","تمرین")+
- path("۴","آزمون نهایی","۲۰ سؤال ترکیبی برای سنجش آمادگی.","exam","آزمون")+"</section>";
+  const p=state.progress;
+  const mastered=topics.filter(t=>mastery(t.id)==="مسلط").length;
+  const last=p.examAttempts.at(-1);
+  const has=Boolean(p.diagnostic);
+  return `<section class="hero"><div class="eyebrow">درس اول · مرور پایه هفتم</div><h1>عربی ۸</h1>${ar(lesson.title)}<p class="intro">${lesson.intro}</p><div class="actions"><button class="btn btn-primary" data-a="go" data-r="${has?"learn":"diagnostic"}">${has?"ادامهٔ یادگیری":"شروع مرور"}</button><button class="btn btn-secondary" data-a="go" data-r="learn">دیدن درس‌ها</button></div></section>
+  <section class="progress-strip"><span class="number">${mastered}</span><div><strong>موضوع مسلط</strong><p class="quiet">از ${topics.length} موضوع</p></div><div class="progress"><span style="width:${pct(mastered,topics.length)}%"></span></div>${last?`<span class="quiet">آزمون ${last.correct}/${last.total}</span>`:""}</section>
+  <div class="section-head"><h2>چهار قدم ساده</h2><p>اول ببین چه بلدی، بعد بخوان و تمرین کن، و آخر خودت را بسنج.</p></div><section class="lesson-path">
+  ${path("۱","مرور اولیه","۱۰ سؤال کوتاه؛ بدون نمرهٔ مدرسه‌ای.","diagnostic",has?"دوباره":"شروع")}
+  ${path("۲","درس‌ها","متن، اسم اشاره، ماضی، عددها، رنگ‌ها و بقیهٔ نکته‌ها.","learn","باز کردن")}
+  ${path("۳","تمرین","پاسخ بده و همان لحظه دلیل جواب را ببین.","practice","تمرین")}
+  ${path("۴","آزمون نهایی","آزمون جمع‌بندی درس اول.","exam","شروع آزمون")}
+  </section>`;
 }
-function path(n,title,desc,route,label){return '<div class="path-step"><span class="path-number">'+n+'</span><div><h3>'+title+'</h3><p>'+desc+"</p></div><button class="btn btn-secondary" data-a="go" data-r=""+route+'">'+label+"</button></div>"}
 
 function diagnostic(){if(state.progress.diagnostic){const d=state.progress.diagnostic;return result("مرور اولیه",d.correct,d.total,"این نتیجه فقط برای پیدا کردن نقطه‌های نیازمند مرور است.",topicBreakdown(d.byTopic||{})+'<div class="actions"><button class="btn btn-primary" data-a="quiz" data-mode="diagnostic">دوباره انجام بده</button><button class="btn btn-secondary" data-a="go" data-r="learn">رفتن به درس‌ها</button></div>')}return quizIntro("مرور اولیه","۱۰ سؤال کوتاه برای اینکه بفهمی کدام بخش‌ها را بهتر است دوباره بخوانی.",10,"diagnostic")}
 function quizIntro(title,desc,count,mode){return '<section class="hero"><div class="eyebrow">بدون نمرهٔ مدرسه‌ای</div><h1>'+title+"</h1><p>"+desc+'</p><div class="intro"><strong>'+count+' سؤال</strong><p>بعد از هر پاسخ، دلیل جواب را می‌بینی. این بخش برای یادگیری است، نه قضاوت.</p><button class="btn btn-primary" data-a="quiz" data-mode="'+mode+'">شروع</button></div></section>'}
