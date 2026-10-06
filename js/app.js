@@ -61,12 +61,22 @@ function practice(){return header("تمرین","۱۰ سؤال ترکیبی؛ ا�
 function exam(){const last=state.progress.examAttempts.at(-1);return header("آزمون نهایی","۲۰ سؤال ترکیبی برای سنجش آمادگی.")+'<div class="intro"><h3>حالا بدون کمک خودت را بسنج.</h3><p>بعد از پایان، موضوع‌های قوی و ضعیف را می‌بینی.</p><div class="actions"><button class="btn btn-primary" data-a="quiz" data-mode="exam">شروع آزمون</button>'+(last?'<button class="btn btn-secondary" data-a="go" data-r="progress">دیدن نتیجهٔ آخر</button>':"")+"</div></div>"}
 
 function progress(){
- const p=state.progress,last=p.examAttempts.at(-1),mastered=topics.filter(t=>mastery(t.id)==="مسلط"),review=topics.filter(t=>mastery(t.id)==="نیاز به مرور");
- return header("دفتر پیشرفت","به جای نمودارهای شلوغ، اینجا می‌بینی چه چیزهایی را یاد گرفته‌ای و چه چیزهایی ارزش مرور دارند.")+
- '<div class="stats-line"><div><span class="stat">'+mastered.length+'</span><span class="stat-label">مسلط</span></div><div><span class="stat">'+review.length+'</span><span class="stat-label">نیازمند مرور</span></div><div><span class="stat">'+p.mistakes.length+'</span><span class="stat-label">اشتباه ذخیره‌شده</span></div><div><span class="stat">'+(last?last.correct+"/"+last.total:"—")+'</span><span class="stat-label">آخرین آزمون</span></div></div>'+
- (review.length?'<div class="section-head"><h2>اول این‌ها را مرور کن</h2></div><div class="word-grid">'+review.slice(0,4).map(t=>'<div class="word"><strong>'+t.title+'</strong><p>آخرین پاسخ‌ها نشان می‌دهند که این بخش هنوز جای تمرین دارد.</p><button class="btn btn-secondary btn-small" data-a="topic" data-id="'+t.id+'">مرور</button></div>').join("")+"</div>":'<div class="tip"><strong>فعلاً موضوعی زیر ۷۰٪ نیست.</strong><p>یک مرور کوتاه و بعد آزمون نهایی کافی است.</p></div>')+
- '<div class="section-head"><h2>وضعیت همهٔ موضوع‌ها</h2></div><div class="progress-list">'+topics.map(t=>{const s=mastery(t.id),r=recentScore(t.id);return '<div class="progress-row"><strong>'+t.title+'</strong><div class="progress"><span style="width:'+(r||0)+'%"></span></div><small>'+s+(r!==null?" · "+r+"٪":"")+"</small></div>"}).join("")+"</div>"+
- '<div class="actions"><button class="btn btn-secondary" data-a="go" data-r="mistakes">مرور اشتباهات ('+p.mistakes.length+')</button><button class="btn btn-danger" data-a="reset">شروع دوباره</button></div>";
+  const p=state.progress;
+  const last=p.examAttempts.at(-1);
+  const mastered=topics.filter(t=>mastery(t.id)==="مسلط");
+  const review=topics.filter(t=>mastery(t.id)==="نیاز به مرور");
+  const reviewBlock=review.length
+    ? `<div class="section-head"><h2>اول این‌ها را مرور کن</h2></div><div class="word-grid">${review.slice(0,4).map(t=>'<div class="word"><strong>'+t.title+'</strong><p>آخرین پاسخ‌ها نشان می‌دهند که این بخش هنوز جای تمرین دارد.</p><button class="btn btn-secondary btn-small" data-a="topic" data-id="'+t.id+'">مرور</button></div>').join("")}</div>`
+    : '<div class="tip"><strong>فعلاً موضوعی زیر ۷۰٪ نیست.</strong><p>یک مرور کوتاه و بعد آزمون نهایی کافی است.</p></div>';
+  const rows=topics.map(t=>{
+    const status=mastery(t.id),score=recentScore(t.id);
+    return '<div class="progress-row"><strong>'+t.title+'</strong><div class="progress"><span style="width:'+(score||0)+'%"></span></div><small>'+status+(score!==null?" · "+score+"٪":"")+"</small></div>";
+  }).join("");
+  return header("دفتر پیشرفت","به جای نمودارهای شلوغ، اینجا می‌بینی چه چیزهایی را یاد گرفته‌ای و چه چیزهایی ارزش مرور دارند.")+
+    '<div class="stats-line"><div><span class="stat">'+mastered.length+'</span><span class="stat-label">مسلط</span></div><div><span class="stat">'+review.length+'</span><span class="stat-label">نیازمند مرور</span></div><div><span class="stat">'+p.mistakes.length+'</span><span class="stat-label">اشتباه ذخیره‌شده</span></div><div><span class="stat">'+(last?last.correct+"/"+last.total:"—")+'</span><span class="stat-label">آخرین آزمون</span></div></div>'+
+    reviewBlock+
+    '<div class="section-head"><h2>وضعیت همهٔ موضوع‌ها</h2></div><div class="progress-list">'+rows+'</div>'+
+    '<div class="actions"><button class="btn btn-secondary" data-a="go" data-r="mistakes">مرور اشتباهات ('+p.mistakes.length+')</button><button class="btn btn-danger" data-a="reset">شروع دوباره</button></div>';
 }
 function mistakes(){const qs=questions.filter(q=>state.progress.mistakes.includes(q.id));if(!qs.length)return header("اشتباهات من")+'<div class="empty"><strong>فعلاً اشتباهی برای مرور نیست.</strong><p>این صفحه وقتی چیزی را اشتباه جواب بدهی، پر می‌شود.</p><button class="btn btn-secondary" data-a="go" data-r="learn">رفتن به درس‌ها</button></div>';return header("اشتباهات من","سؤال‌هایی که هنوز دوباره درست پاسخ نداده‌ای.")+'<div class="intro"><div class="stat">'+qs.length+'</div><p>سؤال برای مرور داری.</p><button class="btn btn-primary" data-a="mistake-quiz">شروع مرور</button></div>'}
 function empty(text){return '<div class="empty">'+text+"</div>"}
@@ -82,7 +92,17 @@ function selectQuestions(mode,topic=null){
  return selected.concat(shuffle(pool.filter(q=>!selected.includes(q)))).slice(0,count);
 }
 function startQuiz(mode,topic=null){const selected=selectQuestions(mode,topic);if(!selected.length){showToast("برای این موضوع هنوز سؤال ثبت نشده است.");return}state.quiz={mode,topic,questions:selected,index:0,correct:0,answers:[]};drawQuiz()}
-function drawQuiz(){const z=state.quiz;if(!z)return;const q=z.questions[z.index];if(!q)return finishQuiz();app.innerHTML='<section class="quiz-shell"><div class="quiz-top"><button class="btn btn-secondary" data-a="quit-quiz">خروج</button><div class="question-meta"><span>'+(z.mode==="exam"?"آزمون نهایی":z.mode==="diagnostic"?"مرور اولیه":"تمرین")+"</span><span>سؤال "+(z.index+1)+" از "+z.questions.length+'</span></div></div><div class="progress"><span style="width:'+pct(z.index+1,z.questions.length)+'%"></span></div><article class="question-card"><div class="eyebrow">'+topicName(q.topic)+"</div><h2>"+esc(q.q)+"</h2><div class="options">"+q.options.map((o,i)=>'<button class="option" data-a="answer" data-i="'+i+'">'+esc(o)+"</button>").join("")+'</div><div id="feedback"></div></article></section>';app.focus({preventScroll:true});window.scrollTo({top:0,behavior:"smooth"})}
+function drawQuiz(){
+  const z=state.quiz;
+  if(!z)return;
+  const q=z.questions[z.index];
+  if(!q)return finishQuiz();
+  const modeLabel=z.mode==="exam"?"آزمون نهایی":z.mode==="diagnostic"?"مرور اولیه":"تمرین";
+  const options=q.options.map((o,i)=>'<button class="option" data-a="answer" data-i="'+i+'">'+esc(o)+"</button>").join("");
+  app.innerHTML=`<section class="quiz-shell"><div class="quiz-top"><button class="btn btn-secondary" data-a="quit-quiz">خروج</button><div class="question-meta"><span>${modeLabel}</span><span>سؤال ${z.index+1} از ${z.questions.length}</span></div></div><div class="progress"><span style="width:${pct(z.index+1,z.questions.length)}%"></span></div><article class="question-card"><div class="eyebrow">${topicName(q.topic)}</div><h2>${esc(q.q)}</h2><div class="options">${options}</div><div id="feedback"></div></article></section>`;
+  app.focus({preventScroll:true});
+  window.scrollTo({top:0,behavior:"smooth"});
+}
 function answer(index){const z=state.quiz,q=z.questions[z.index],ok=index===q.answer,options=[...document.querySelectorAll(".option")];options.forEach(b=>b.disabled=true);if(options[index])options[index].classList.add(ok?"correct":"wrong");if(options[q.answer])options[q.answer].classList.add("correct");if(ok)z.correct++;z.answers.push({id:q.id,topic:q.topic,correct:ok});document.querySelector("#feedback").innerHTML='<div class="feedback '+(ok?"correct":"wrong")+'"><div class="why">چرا؟</div><strong>'+(ok?"پاسخ درست است.":"پاسخ درست این نبود.")+"</strong><p>"+esc(q.explanation)+'</p><div class="actions"><button class="btn btn-primary" data-a="next">'+(z.index===z.questions.length-1?"دیدن نتیجه":"سؤال بعدی")+"</button></div></div>"}
 function finishQuiz(){
  const z=state.quiz;if(!z)return;const by={};z.answers.forEach(a=>{by[a.topic]??={correct:0,total:0};by[a.topic].total++;if(a.correct)by[a.topic].correct++});
