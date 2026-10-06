@@ -1,18 +1,24 @@
 name: Validate
+
 on:
   pull_request:
   push:
     branches: [main]
+
 jobs:
-  syntax:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-      - name: Check JavaScript syntax
-        run: |
-          node --check js/app.js
-          node --check js/data.js
-          node --check js/storage.js
+          cache: npm
+      - name: Install test tooling
+        run: npm install --no-fund --no-audit
+      - name: Static checks
+        run: npm run check
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Mobile viewport test
+        run: npm run test:mobile
