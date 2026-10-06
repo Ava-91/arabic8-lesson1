@@ -65,9 +65,9 @@ function home(){
   </section>
   <div class="section-head"><h2>مسیر پیشنهادی</h2></div>
   <section class="grid grid-3">
-    <article class="card"><div class="card-icon">①</div><h3>اول تشخیص بده</h3><p>۱۰ سؤال بدون نمره برای پیدا کردن بخش‌های ضعیف‌تر.</p><button class="btn btn-secondary" data-a="go" data-r="diagnostic">${hasDiagnostic?"اجرای دوباره":"شروع"} مرور اولیه</button></article>
-    <article class="card"><div class="card-icon">②</div><h3>بعد یاد بگیر</h3><p>هر موضوع را کوتاه بخوان و بلافاصله همان موضوع را تمرین کن.</p><button class="btn btn-secondary" data-a="go" data-r="learn">رفتن به آموزش</button></article>
-    <article class="card"><div class="card-icon">③</div><h3>آخر خودت را بسنج</h3><p>آزمون نهایی، نتیجه و اشتباهاتت را یک‌جا نشان می‌دهد.</p><button class="btn btn-secondary" data-a="go" data-r="exam">آزمون نهایی</button></article>
+    <article class="card path-card"><div class="step-number">۰۱</div><h3>اول تشخیص بده</h3><p>۱۰ سؤال بدون نمره برای پیدا کردن بخش‌های ضعیف‌تر.</p><button class="btn btn-secondary" data-a="go" data-r="diagnostic">${hasDiagnostic?"اجرای دوباره":"شروع"} مرور اولیه</button></article>
+    <article class="card path-card"><div class="step-number">۰۲</div><h3>بعد یاد بگیر</h3><p>هر موضوع را کوتاه بخوان و بلافاصله همان موضوع را تمرین کن.</p><button class="btn btn-secondary" data-a="go" data-r="learn">رفتن به آموزش</button></article>
+    <article class="card path-card"><div class="step-number">۰۳</div><h3>آخر خودت را بسنج</h3><p>آزمون نهایی، نتیجه و اشتباهاتت را یک‌جا نشان می‌دهد.</p><button class="btn btn-secondary" data-a="go" data-r="exam">آزمون نهایی</button></article>
   </section>
   `;
 }
@@ -102,7 +102,7 @@ function learn(){
   <section class="grid grid-2">
     ${topics.map((t,i)=>`
       <article class="card topic-card">
-        <div class="topic-top"><div class="card-icon">${t.icon}</div><span class="topic-number">۰${i+1}</span></div>
+        <div class="topic-top"><div class="card-icon"><span class="topic-number">۰${i+1}</span></div><span class="topic-number">${state.progress.completedTopics.includes(t.id)?"✓":"—"}</span></div>
         <div class="kicker"><span>موضوع ${i+1}</span>${state.progress.completedTopics.includes(t.id)?'<span class="complete">✓ تکمیل</span>':""}</div>
         <h3>${t.title}</h3><p>${t.description}</p>
         <div class="actions"><button class="btn btn-secondary" data-a="topic" data-id="${t.id}">باز کردن</button></div>
@@ -148,9 +148,18 @@ function exam(){
 
 function progress(){
   const p=state.progress,last=p.examAttempts.at(-1);
-  return `${header("پیشرفت من","نتایج این دستگاه در مرورگر ذخیره می‌شوند؛ اطلاعات به حساب کاربری یا سرور ارسال نمی‌شود.")}
+  const completed=p.completedTopics.length;
+  const overall=pct(completed,topics.length);
+  const weakest=Object.entries(p.topicScores).sort((a,b)=>a[1].percent-b[1].percent).slice(0,3).filter(([,s])=>s.percent<70);
+  return `${header("پیشرفت من","پیشرفتت را در یک نگاه ببین و دقیقاً بفهم کجا ارزش مرور دوباره دارد.")}
+  <section class="card progress-card">
+    <div class="kicker"><span>پیشرفت کلی</span><strong>${overall}%</strong></div>
+    <div class="progress"><span style="width:${overall}%"></span></div>
+    <p><strong>${completed}</strong> از <strong>${topics.length}</strong> موضوع تکمیل شده است.</p>
+    ${weakest.length?`<div class="recommendation"><strong>اول این‌ها را مرور کن:</strong> ${weakest.map(([id])=>topicName(id)).join("، ")}</div>`:"<div class=\"recommendation good\">مسیرت خوب پیش می‌رود؛ مرور کلی بعدی کافی است.</div>"}
+  </section>
   <section class="grid grid-3">
-    <div class="card"><div class="muted">موضوع‌های تکمیل‌شده</div><div class="stat">${p.completedTopics.length}/${topics.length}</div></div>
+    <div class="card"><div class="muted">موضوع‌های تکمیل‌شده</div><div class="stat">${completed}/${topics.length}</div></div>
     <div class="card"><div class="muted">آخرین آزمون</div><div class="stat">${last?last.correct+"/"+last.total:"—"}</div></div>
     <div class="card"><div class="muted">اشتباه‌های ذخیره‌شده</div><div class="stat">${p.mistakes.length}</div></div>
   </section>
@@ -158,7 +167,6 @@ function progress(){
   <section class="grid grid-2">${topics.map(t=>{const s=p.topicScores[t.id];return`<div class="card"><div class="kicker"><strong>${t.title}</strong><span>${s?s.percent+"%":"شروع نشده"}</span></div><div class="progress"><span style="width:${s?.percent||0}%"></span></div>${s?`<small class="muted">${s.correct} پاسخ درست از ${s.total}</small>`:""}</div>`}).join("")}</section>
   <div class="actions"><button class="btn btn-secondary" data-a="go" data-r="mistakes">مرور اشتباهات (${p.mistakes.length})</button><button class="btn btn-danger" data-a="reset">پاک کردن پیشرفت</button></div>`;
 }
-
 function about(){
   return `${header("درباره پروژه")}
   <section class="card">
