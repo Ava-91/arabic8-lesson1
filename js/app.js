@@ -16,6 +16,7 @@ function recent(id){return state.progress.topicRecent?.[id]||[]}
 function recentScore(id){const a=recent(id);return a.length?Math.round(a.reduce((s,x)=>s+x,0)/a.length*100):null}
 function mastery(id){const r=recentScore(id),n=recent(id).length;if(r===null)return"شروع نشده";if(r>=80&&n>=5)return"مسلط";if(r<70)return"نیاز به مرور";return"در حال یادگیری"}
 function statusClass(s){return s==="مسلط"?"mastered":s==="نیاز به مرور"?"review":""}
+function path(number,title,desc,route,label){return '<button class="path-row" data-a="go" data-r="'+route+'"><span class="path-number">'+number+'</span><span class="path-copy"><strong>'+title+'</strong><small>'+desc+'</small></span><span class="path-action">'+label+'</span></button>'}
 
 function home(){
   const p=state.progress;
