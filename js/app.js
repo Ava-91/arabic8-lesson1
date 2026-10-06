@@ -1,12 +1,10 @@
-import{topics,lesson,questions}from"./data.js";
+import{topics}from"./data/topics.js";
+import{lesson}from"./data/lesson.js";
+import{questions}from"./data/questions.js";
+import{topicName,pct,shuffle,esc,ar}from"./utils.js";
 import{loadProgress,saveProgress,resetProgress}from"./storage.js";
 let state={progress:loadProgress(),quiz:null,dialogAction:null};
 const app=document.querySelector("#app"),sidebar=document.querySelector("#sidebar"),toast=document.querySelector("#toast"),dialog=document.querySelector("#dialog"),topbar=document.querySelector(".topbar"),mobileNav=document.querySelector("#mobileNav");
-const topicName=id=>topics.find(t=>t.id===id)?.title||"عمومی";
-const pct=(a,b)=>b?Math.round(a/b*100):0;
-const shuffle=a=>[...a].sort(()=>Math.random()-.5);
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const ar=s=>'<span class="arabic" lang="ar" dir="rtl">'+esc(s)+"</span>";
 function go(route){location.hash=route;window.scrollTo({top:0,behavior:"smooth"})}
 function persist(fn){fn(state.progress);if(!saveProgress(state.progress))showToast("ذخیرهٔ پیشرفت در این مرورگر ممکن نشد.")}
 function showToast(message){toast.textContent=message;toast.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>toast.classList.remove("show"),2200)}
