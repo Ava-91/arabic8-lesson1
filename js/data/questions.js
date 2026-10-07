@@ -58,7 +58,7 @@ export const questions=[
 {id:"o8",topic:"odd-one-out",q:"کدام واژه ناهماهنگ است؟",options:["سَقَطَ","أَلْقَى","رُبَّ","سَلِمَ"],answer:2,explanation:"سه گزینهٔ دیگر فعل‌اند؛ «رُبَّ» حرف است."},
 
 {id:"v1",topic:"vocabulary",q:"«ثَمانِیَة» یعنی چه؟",options:["هفت","هشت","نه","ده"],answer:1,explanation:"ثَمانِیَة یعنی هشت."},
-{id:"v2",topic:"vocabulary",q:"«وَصَلَ» یعنی چه؟",options:["رسید","رفت","دید","نوشت"],answer:0,explanation:"وَصَلَ یعنی رسید."},
+{id:"vocabulary-wasala",topic:"vocabulary",q:"«وَصَلَ» یعنی چه؟",options:["رسید","رفت","دید","نوشت"],answer:0,explanation:"وَصَلَ یعنی رسید."},
 {id:"v3",topic:"vocabulary",q:"«لَیْتَ» یعنی چه؟",options:["شاید","ای کاش","زیرا","همه"],answer:1,explanation:"لَیْتَ برای آرزو و به معنی «ای کاش» است."},
 {id:"v4",topic:"vocabulary",q:"«رَأَیْتُ» یعنی چه؟",options:["دیدم","رفتم","شنیدم","خوردم"],answer:0,explanation:"رَأَیْتُ یعنی «دیدم»."},
 {id:"v5",topic:"vocabulary",q:"«مُساعَدَة» یعنی چه؟",options:["کمک","شبکه","ماه","کشتی"],answer:0,explanation:"مُساعَدَة یعنی کمک."},
