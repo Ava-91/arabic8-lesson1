@@ -5,6 +5,7 @@ const num=(v,fallback=0,min=0)=>{const n=Number(v);return Number.isFinite(n)?Mat
 const defaults=()=>({version:4,diagnostic:null,topicScores:{},topicRecent:{},completedTopics:[],examAttempts:[],mistakes:[],review:{},xp:0,streak:{current:0,best:0,lastActive:null},daily:{date:today(),xp:0,goal:20,completed:false},achievements:[]});
 function normalizeScore(v){if(!v||typeof v!=="object")return null;const total=Math.floor(num(v.total,0));const correct=Math.min(total,Math.floor(num(v.correct,0)));return{correct,total,percent:total?Math.round(correct/total*100):0}}
 function normalizeRecent(v){return Array.isArray(v)?v.map(x=>x===1||x===true?1:0).slice(-10):[]}
+function normalizeBreakdown(v){if(!v||typeof v!=="object"||Array.isArray(v))return{};const out={};Object.keys(v).forEach(k=>{const x=v[k];if(!x||typeof x!=="object")return;const total=Math.max(0,Math.floor(num(x.total)));const correct=Math.min(total,Math.max(0,Math.floor(num(x.correct))));out[k]={correct,total}});return out}
 function migrate(raw){
  const base=defaults(),p=raw&&typeof raw==="object"&&!Array.isArray(raw)?{...base,...raw}:base;
  p.version=4;
@@ -13,7 +14,7 @@ function migrate(raw){
  p.topicRecent=p.topicRecent&&typeof p.topicRecent==="object"&&!Array.isArray(p.topicRecent)?p.topicRecent:{};
  Object.keys(p.topicRecent).forEach(k=>{p.topicRecent[k]=normalizeRecent(p.topicRecent[k])});
  p.completedTopics=[...new Set(Array.isArray(p.completedTopics)?p.completedTopics.filter(v=>typeof v==="string"):[])];
- p.examAttempts=Array.isArray(p.examAttempts)?p.examAttempts.filter(x=>x&&typeof x==="object").slice(-50).map(x=>({correct:Math.min(Math.max(0,Math.floor(num(x.correct))),Math.max(0,Math.floor(num(x.total)))),total:Math.max(0,Math.floor(num(x.total))),date:typeof x.date==="string"?x.date:"",byTopic:x.byTopic&&typeof x.byTopic==="object"&&!Array.isArray(x.byTopic)?x.byTopic:{}})):[];
+ p.examAttempts=Array.isArray(p.examAttempts)?p.examAttempts.filter(x=>x&&typeof x==="object").slice(-50).map(x=>({correct:Math.min(Math.max(0,Math.floor(num(x.correct))),Math.max(0,Math.floor(num(x.total)))),total:Math.max(0,Math.floor(num(x.total))),date:typeof x.date==="string"?x.date:"",byTopic:normalizeBreakdown(x.byTopic)})):[];
  p.mistakes=[...new Set(Array.isArray(p.mistakes)?p.mistakes.filter(v=>typeof v==="string"):[])];
  p.review=p.review&&typeof p.review==="object"&&!Array.isArray(p.review)?p.review:{};
  Object.keys(p.review).forEach(k=>{const r=p.review[k];if(!r||typeof r!=="object"){delete p.review[k];return}p.review[k]={interval:Math.min(30,Math.max(1,num(r.interval,1,1))),ease:Math.min(3.1,Math.max(1.7,num(r.ease,2.5,1.7))),due:typeof r.due==="string"&&Number.isFinite(new Date(r.due).getTime())?r.due:new Date().toISOString(),streak:Math.max(0,Math.floor(num(r.streak,0,0)))}});
@@ -26,7 +27,7 @@ function migrate(raw){
  p.daily={date:validDate(d.date)?d.date:today(),xp:Math.floor(num(d.xp,0,0)),goal:Math.floor(num(d.goal,20,20)),completed:Boolean(d.completed)};
  if(p.daily.date!==today())p.daily={date:today(),xp:0,goal:20,completed:false};
  if(p.daily.xp>=p.daily.goal)p.daily.completed=true;
- if(p.diagnostic&&typeof p.diagnostic==="object")p.diagnostic={correct:Math.min(Math.max(0,Math.floor(num(p.diagnostic.correct))),Math.max(0,Math.floor(num(p.diagnostic.total)))),total:Math.max(0,Math.floor(num(p.diagnostic.total))),byTopic:p.diagnostic.byTopic&&typeof p.diagnostic.byTopic==="object"&&!Array.isArray(p.diagnostic.byTopic)?p.diagnostic.byTopic:{},date:typeof p.diagnostic.date==="string"?p.diagnostic.date:""};else p.diagnostic=null;
+ if(p.diagnostic&&typeof p.diagnostic==="object")p.diagnostic={correct:Math.min(Math.max(0,Math.floor(num(p.diagnostic.correct))),Math.max(0,Math.floor(num(p.diagnostic.total)))),total:Math.max(0,Math.floor(num(p.diagnostic.total))),byTopic:normalizeBreakdown(p.diagnostic.byTopic),date:typeof p.diagnostic.date==="string"?p.diagnostic.date:""};else p.diagnostic=null;
  return p
 }
 export function loadProgress(){try{const raw=localStorage.getItem(KEY);if(raw)return migrate(JSON.parse(raw));const old=localStorage.getItem("arabic8-lesson1-progress-v3");if(old){const p=migrate(JSON.parse(old));localStorage.setItem(KEY,JSON.stringify(p));return p}return defaults()}catch{return defaults()}}
