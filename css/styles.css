@@ -20,8 +20,8 @@
 
 @media(max-width:430px){.mobile-nav{padding-left:4.8rem}}
 @media (orientation:landscape) and (max-height:500px){.mobile-nav a{padding:.2rem}.main{padding-bottom:4.2rem}.hero{padding:1rem}}
-@media(prefers-reduced-motion:reduce){.network-status,.skip-link{transition:none!important}}
+@media(prefers-reduced-motion:reduce){.skip-link{transition:none!important}}
 
 @media(max-width:799px){.toast{bottom:calc(4.8rem + env(safe-area-inset-bottom));}.mobile-nav{padding:.35rem .45rem .35rem;min-height:4.35rem}.mobile-nav.hidden{transform:translateY(calc(100% + 1rem))}}
 
-.inline-icon{font-size:1rem;vertical-align:-3px;margin-inline:.15rem}.network-status{display:none!important}
+.inline-icon{font-size:1rem;vertical-align:-3px;margin-inline:.15rem}
