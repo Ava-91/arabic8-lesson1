@@ -1,24 +1,4 @@
-import {test,expect} from "@playwright/test";
-
-test("mobile navigation and core routes remain usable",async({page})=>{
-  await page.goto("/");
-  await expect(page.locator("main#app")).toBeVisible();
-  await expect(page.locator(".mobile-nav")).toBeVisible();
-  await expect(page.locator(".sidebar")).toBeHidden();
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
-
-  for(const route of ["learn","practice","exam","progress"]){
-    await page.locator('.mobile-nav a[data-route="'+route+'"]').click();
-    await expect(page).toHaveURL(new RegExp("#"+route+"$"));
-    await expect(page.locator("main#app")).toBeVisible();
-  }
-
-  await page.goto("/#diagnostic");
-  await page.getByRole("button",{name:"شروع"}).click();
-  await expect(page.locator(".option").first()).toBeVisible();
-  await page.locator(".option").first().click();
-  await expect(page.locator("#feedback")).toBeVisible();
-  await expect(page.locator("#feedback")).toHaveAttribute("aria-live","polite");
-
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
-});
+import{test,expect}from"@playwright/test";
+test("V2 mobile learning path and quiz",async({page})=>{await page.goto("/");await expect(page.locator("main#app")).toBeVisible();await expect(page.locator(".mobile-nav")).toBeVisible();await expect(page.locator(".path-card").first()).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);await page.locator('[data-route="learn"]').click();await expect(page).toHaveURL(/#learn$/);await page.locator('.path-card [data-a="topic"]').first().click();await expect(page.locator(".micro-lesson")).toBeVisible();await page.getByRole("button",{name:"تمرین این موضوع"}).click();await expect(page.locator(".question-card")).toBeVisible();await expect(page.locator(".option").first()).toBeVisible();await page.locator(".option").first().click();await expect(page.locator("#feedback")).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1)});
+test("V2 progress dashboard exists",async({page})=>{await page.goto("/#progress");await expect(page.locator(".dashboard-grid")).toBeVisible();await expect(page.locator(".achievement-grid")).toBeVisible()});
+test("V2 question types render",async({page})=>{await page.goto("/#practice");await page.getByRole("button",{name:"شروع تمرین"}).click();await expect(page.locator(".question-card")).toBeVisible();});
