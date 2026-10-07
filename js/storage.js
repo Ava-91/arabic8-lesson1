@@ -1,11 +1,38 @@
 const KEY="arabic8-lesson1-progress-v4";
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const validDate=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
+const num=(v,fallback=0,min=0)=>{const n=Number(v);return Number.isFinite(n)?Math.max(min,n):fallback};
 const defaults=()=>({version:4,diagnostic:null,topicScores:{},topicRecent:{},completedTopics:[],examAttempts:[],mistakes:[],review:{},xp:0,streak:{current:0,best:0,lastActive:null},daily:{date:today(),xp:0,goal:20,completed:false},achievements:[]});
-function migrate(raw){const p={...defaults(),...(raw||{})};p.version=4;p.topicScores=p.topicScores&&typeof p.topicScores==="object"?p.topicScores:{};p.topicRecent=p.topicRecent&&typeof p.topicRecent==="object"?p.topicRecent:{};p.completedTopics=Array.isArray(p.completedTopics)?p.completedTopics:[];p.examAttempts=Array.isArray(p.examAttempts)?p.examAttempts:[];p.mistakes=Array.isArray(p.mistakes)?p.mistakes:[];p.review=p.review&&typeof p.review==="object"?p.review:{};p.achievements=Array.isArray(p.achievements)?p.achievements:[];Object.keys(p.topicRecent).forEach(k=>{p.topicRecent[k]=Array.isArray(p.topicRecent[k])?p.topicRecent[k].map(v=>v?1:0).slice(-10):[]});p.xp=Math.max(0,Number(p.xp)||0);p.streak={current:0,best:0,lastActive:null,...(p.streak||{})};p.streak.current=Math.max(0,Number(p.streak.current)||0);p.streak.best=Math.max(p.streak.current,Number(p.streak.best)||0);p.daily={date:today(),xp:0,goal:20,completed:false,...(p.daily||{})};if(p.daily.date!==today())p.daily={date:today(),xp:0,goal:20,completed:false};return p}
+function normalizeScore(v){if(!v||typeof v!=="object")return null;const total=Math.floor(num(v.total,0));const correct=Math.min(total,Math.floor(num(v.correct,0)));return{correct,total,percent:total?Math.round(correct/total*100):0}}
+function normalizeRecent(v){return Array.isArray(v)?v.map(x=>x===1||x===true?1:0).slice(-10):[]}
+function migrate(raw){
+ const base=defaults(),p=raw&&typeof raw==="object"&&!Array.isArray(raw)?{...base,...raw}:base;
+ p.version=4;
+ p.topicScores=p.topicScores&&typeof p.topicScores==="object"&&!Array.isArray(p.topicScores)?p.topicScores:{};
+ Object.keys(p.topicScores).forEach(k=>{const s=normalizeScore(p.topicScores[k]);if(s)p.topicScores[k]=s;else delete p.topicScores[k]});
+ p.topicRecent=p.topicRecent&&typeof p.topicRecent==="object"&&!Array.isArray(p.topicRecent)?p.topicRecent:{};
+ Object.keys(p.topicRecent).forEach(k=>{p.topicRecent[k]=normalizeRecent(p.topicRecent[k])});
+ p.completedTopics=[...new Set(Array.isArray(p.completedTopics)?p.completedTopics.filter(v=>typeof v==="string"):[])];
+ p.examAttempts=Array.isArray(p.examAttempts)?p.examAttempts.filter(x=>x&&typeof x==="object").slice(-50).map(x=>({correct:Math.min(Math.max(0,Math.floor(num(x.correct))),Math.max(0,Math.floor(num(x.total)))),total:Math.max(0,Math.floor(num(x.total))),date:typeof x.date==="string"?x.date:"",byTopic:x.byTopic&&typeof x.byTopic==="object"&&!Array.isArray(x.byTopic)?x.byTopic:{}})):[];
+ p.mistakes=[...new Set(Array.isArray(p.mistakes)?p.mistakes.filter(v=>typeof v==="string"):[])];
+ p.review=p.review&&typeof p.review==="object"&&!Array.isArray(p.review)?p.review:{};
+ Object.keys(p.review).forEach(k=>{const r=p.review[k];if(!r||typeof r!=="object"){delete p.review[k];return}p.review[k]={interval:Math.min(30,Math.max(1,num(r.interval,1,1))),ease:Math.min(3.1,Math.max(1.7,num(r.ease,2.5,1.7))),due:typeof r.due==="string"&&Number.isFinite(new Date(r.due).getTime())?r.due:new Date().toISOString(),streak:Math.max(0,Math.floor(num(r.streak,0,0)))}});
+ p.achievements=[...new Set(Array.isArray(p.achievements)?p.achievements.filter(v=>typeof v==="string"):[])];
+ p.xp=Math.floor(num(p.xp,0,0));
+ const s=p.streak&&typeof p.streak==="object"?p.streak:{};
+ p.streak={current:Math.floor(num(s.current,0,0)),best:Math.floor(num(s.best,0,0)),lastActive:validDate(s.lastActive)?s.lastActive:null};
+ p.streak.best=Math.max(p.streak.best,p.streak.current);
+ const d=p.daily&&typeof p.daily==="object"?p.daily:{};
+ p.daily={date:validDate(d.date)?d.date:today(),xp:Math.floor(num(d.xp,0,0)),goal:Math.floor(num(d.goal,20,20)),completed:Boolean(d.completed)};
+ if(p.daily.date!==today())p.daily={date:today(),xp:0,goal:20,completed:false};
+ if(p.daily.xp>=p.daily.goal)p.daily.completed=true;
+ if(p.diagnostic&&typeof p.diagnostic==="object")p.diagnostic={correct:Math.min(Math.max(0,Math.floor(num(p.diagnostic.correct))),Math.max(0,Math.floor(num(p.diagnostic.total)))),total:Math.max(0,Math.floor(num(p.diagnostic.total))),byTopic:p.diagnostic.byTopic&&typeof p.diagnostic.byTopic==="object"&&!Array.isArray(p.diagnostic.byTopic)?p.diagnostic.byTopic:{},date:typeof p.diagnostic.date==="string"?p.diagnostic.date:""};else p.diagnostic=null;
+ return p
+}
 export function loadProgress(){try{const raw=localStorage.getItem(KEY);if(raw)return migrate(JSON.parse(raw));const old=localStorage.getItem("arabic8-lesson1-progress-v3");if(old){const p=migrate(JSON.parse(old));localStorage.setItem(KEY,JSON.stringify(p));return p}return defaults()}catch{return defaults()}}
 export function saveProgress(p){try{localStorage.setItem(KEY,JSON.stringify(migrate(p)));return true}catch{return false}}
 export function resetProgress(){try{localStorage.removeItem(KEY);localStorage.removeItem("arabic8-lesson1-progress-v3")}catch{}return defaults()}
-export function recordAnswer(p,a){p.topicRecent[a.topic]??=[];p.topicRecent[a.topic].push(a.correct?1:0);p.topicRecent[a.topic]=p.topicRecent[a.topic].slice(-10);const old=p.topicScores[a.topic]||{correct:0,total:0};old.correct+=a.correct?1:0;old.total++;old.percent=Math.round(old.correct/old.total*100);p.topicScores[a.topic]=old;const r=p.review[a.id]||{interval:1,ease:2.5,due:new Date().toISOString(),streak:0};if(a.correct){r.streak++;r.interval=Math.min(30,Math.max(1,Math.round(r.interval*r.ease)));r.due=new Date(Date.now()+r.interval*86400000).toISOString();r.ease=Math.min(3.1,r.ease+.08);p.mistakes=p.mistakes.filter(id=>id!==a.id)}else{r.streak=0;r.interval=1;r.ease=Math.max(1.7,r.ease-.2);r.due=new Date(Date.now()+86400000).toISOString();if(!p.mistakes.includes(a.id))p.mistakes.push(a.id)}p.review[a.id]=r}
-export function recordTopicCompletion(p,id){if(!p.completedTopics.includes(id))p.completedTopics.push(id)}
-export function completeDailyGoal(p,n){const d=today();if(p.daily.date!==d)p.daily={date:d,xp:0,goal:20,completed:false};p.daily.xp+=n;if(!p.daily.completed&&p.daily.xp>=p.daily.goal){p.daily.completed=true;const last=p.streak.lastActive;if(!last)p.streak.current=1;else{const diff=Math.round((new Date(d+"T00:00:00")-new Date(last+"T00:00:00"))/86400000);p.streak.current=diff===1?p.streak.current+1:diff===0?p.streak.current:1}p.streak.best=Math.max(p.streak.best,p.streak.current);p.streak.lastActive=d}}
-export function markAchievement(p,id){if(!p.achievements.includes(id))p.achievements.push(id)}
+export function recordAnswer(p,a){p.topicRecent[a.topic]=normalizeRecent([...(p.topicRecent[a.topic]||[]),a.correct?1:0]);const old=normalizeScore(p.topicScores[a.topic])||{correct:0,total:0,percent:0};old.correct+=a.correct?1:0;old.total++;old.percent=Math.round(old.correct/old.total*100);p.topicScores[a.topic]=old;const r=p.review[a.id]||{interval:1,ease:2.5,due:new Date().toISOString(),streak:0};if(a.correct){r.streak++;r.interval=Math.min(30,Math.max(1,Math.round(r.interval*r.ease)));r.due=new Date(Date.now()+r.interval*86400000).toISOString();r.ease=Math.min(3.1,r.ease+.08);p.mistakes=p.mistakes.filter(id=>id!==a.id)}else{r.streak=0;r.interval=1;r.ease=Math.max(1.7,r.ease-.2);r.due=new Date(Date.now()+86400000).toISOString();if(!p.mistakes.includes(a.id))p.mistakes.push(a.id)}p.review[a.id]=r}
+export function recordTopicCompletion(p,id){if(typeof id==="string"&&!p.completedTopics.includes(id))p.completedTopics.push(id)}
+export function completeDailyGoal(p,n){const d=today();if(p.daily.date!==d)p.daily={date:d,xp:0,goal:20,completed:false};p.daily.xp=Math.floor(num(p.daily.xp,0,0))+Math.max(0,Math.floor(num(n,0,0)));if(!p.daily.completed&&p.daily.xp>=p.daily.goal){p.daily.completed=true;const last=p.streak.lastActive;if(!last)p.streak.current=1;else{const diff=Math.round((new Date(d+"T00:00:00")-new Date(last+"T00:00:00"))/86400000);p.streak.current=diff===1?p.streak.current+1:diff===0?p.streak.current:1}p.streak.best=Math.max(p.streak.best,p.streak.current);p.streak.lastActive=d}}
+export function markAchievement(p,id){if(typeof id==="string"&&!p.achievements.includes(id))p.achievements.push(id)}
