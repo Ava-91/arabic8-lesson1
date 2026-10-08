@@ -25,3 +25,14 @@
 @media(max-width:799px){.toast{top:70px}.mobile-nav{padding:.35rem .45rem .35rem;min-height:4.35rem}.mobile-nav.hidden{transform:translateY(calc(100% + 1rem))}}
 
 .inline-icon{font-size:1rem;vertical-align:-3px;margin-inline:.15rem}
+
+
+/* Home: start with the lesson, not a dashboard. */
+.home-heading{padding:clamp(1rem,3vw,1.6rem) 0 1.2rem;border-bottom:1px solid var(--line);margin-bottom:1rem}
+.home-heading h1{font-size:clamp(1.8rem,4vw,2.35rem);margin:.25rem 0 .35rem}
+.home-heading .arabic-title{color:var(--muted);font-family:Amiri,serif;font-size:1.12rem;margin:0 0 1rem}
+.home-heading .actions{margin-top:.8rem}
+.home-progress{display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;color:var(--muted);font-size:.88rem;padding:.25rem 0 1.2rem}
+.home-progress span+span{border-inline-start:1px solid var(--line);padding-inline-start:1.2rem}
+.path-card .path-copy>p{display:none}
+@media(max-width:380px){.home-progress{gap:.45rem .75rem}.home-progress span+span{padding-inline-start:.75rem}}
