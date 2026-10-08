@@ -1,6 +1,6 @@
 const KEY="arabic8-lesson1-progress-v4";
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
-const validDate=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
+const validDate=v=>{if(typeof v!=="string"||!/^(\d{4})-(\d{2})-(\d{2})$/.test(v))return false;const m=v.match(/^(\d{4})-(\d{2})-(\d{2})$/);const y=Number(m[1]),month=Number(m[2]),day=Number(m[3]);const d=new Date(Date.UTC(y,month-1,day));return d.getUTCFullYear()===y&&d.getUTCMonth()===month-1&&d.getUTCDate()===day};
 const num=(v,fallback=0,min=0)=>{const n=Number(v);return Number.isFinite(n)?Math.max(min,n):fallback};
 const defaults=()=>({version:4,diagnostic:null,topicScores:{},topicRecent:{},completedTopics:[],examAttempts:[],mistakes:[],review:{},xp:0,streak:{current:0,best:0,lastActive:null},daily:{date:today(),xp:0,goal:20,completed:false},achievements:[]});
 function normalizeScore(v){if(!v||typeof v!=="object"||Array.isArray(v))return null;const total=Math.min(100000,Math.floor(num(v.total,0)));const correct=Math.min(total,Math.floor(num(v.correct,0)));return{correct,total,percent:total?Math.round(correct/total*100):0}}
