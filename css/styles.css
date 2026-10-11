@@ -397,3 +397,7 @@ function applyTheme(theme){
 }
 function savedTheme(){try{const value=localStorage.getItem(THEME_KEY);if(value==="dark"||value==="light")return value}catch(e){}return "light"}
 applyTheme(savedTheme());
+html[data-theme="dark"] .eyebrow,html[data-theme="dark"] .stat-card span{color:var(--accent)}
+html[data-theme="dark"] .section-head p,html[data-theme="dark"] .quiet,html[data-theme="dark"] .intro p{color:var(--muted)}
+html[data-theme="dark"] .hero-stats span,html[data-theme="dark"] .stat-card small,html[data-theme="dark"] .path-copy p,html[data-theme="dark"] .word p{color:var(--muted)}
+html[data-theme="dark"] .exam-timer.timer-danger{color:#ffabb4;border-color:var(--bad)}
