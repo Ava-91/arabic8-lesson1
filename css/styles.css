@@ -218,3 +218,89 @@ body{
   .mobile-nav{padding-inline:.25rem}
   .mobile-nav a{font-size:.62rem}
 }
+
+
+/* 2026 visual refresh: warm paper, deep teal, and saffron accents */
+:root{
+  --bg:#f7f5ee;
+  --panel:#fffdf7;
+  --panel2:#f0eee5;
+  --paper:#e4f1ed;
+  --line:#dedfd5;
+  --text:#203b3b;
+  --muted:#687d78;
+  --accent:#147d72;
+  --accent2:#e0a33a;
+  --good:#18805e;
+  --bad:#c74c59;
+  --gold:#a66a0a;
+}
+body{
+  background:
+    radial-gradient(ellipse at 92% 0%,rgba(20,125,114,.09),transparent 34%),
+    radial-gradient(ellipse at 0% 22%,rgba(224,163,58,.09),transparent 28%),
+    var(--bg);
+  color:var(--text);
+}
+.topbar{background:rgba(255,253,247,.92);border-bottom-color:var(--line)}
+.brand-mark{background:#e4f1ed;border-color:#c6e0d8;color:#126e64}
+.brand small{color:var(--muted)}
+.sidebar{background:#fffdf8;border-left-color:var(--line)}
+.sidebar nav a,.mobile-nav a{color:#647a75}
+.sidebar nav a.active,.mobile-nav a.active{background:#e1f0eb;color:#126e64}
+.sidebar nav a.active{box-shadow:inset -3px 0 0 var(--accent)}
+.sidebar nav a:hover{background:#f0f7f3;color:#126e64}
+.eyebrow{color:#147d72}
+.home-heading,.hero{
+  border-color:#cfe1d9;
+  background:linear-gradient(125deg,#e4f2ed 0%,#fffdf7 62%,#fff1d8 100%);
+  box-shadow:0 16px 42px rgba(31,79,69,.07);
+}
+.home-heading:after{color:rgba(20,125,114,.07)}
+.home-heading .arabic-title{color:#54736b}
+.home-progress span{background:#fffdf7;border-color:var(--line);color:#5f7770}
+.path-group{background:rgba(255,253,247,.82);border-color:var(--line)}
+.step-badge,.path-node{background:#e1f0eb;color:#126e64}
+.path-card{background:#fffdf8;border-color:#e1e2d8}
+.path-card:hover{border-color:#a8d2c6;box-shadow:0 8px 24px rgba(25,91,78,.08)}
+.path-card.done{border-color:#9fd2be;background:#f4fcf7}
+.mini-progress span{background:linear-gradient(90deg,#147d72,#e0a33a)}
+.btn{border-color:#cdded7;background:#edf5f1;color:#17685e}
+.btn:hover{box-shadow:0 5px 14px rgba(25,91,78,.12)}
+.btn-primary{background:#147d72;border-color:#147d72;color:#fff;box-shadow:0 7px 16px rgba(20,125,114,.18)}
+.btn-primary:hover{background:#0f695f}
+.btn-secondary{background:#fffdf7;color:var(--text);border-color:var(--line)}
+.btn-danger{color:#a83245;background:#fff0ef}
+.hero-stats div,.stat-card,.daily-card,.micro-lesson,.intro,.adaptive-card,.dashboard-panel,.question-card,.result{
+  background:var(--panel);border-color:var(--line);
+}
+.ring{background:conic-gradient(var(--accent) var(--value),#e4e4d9 0)}
+.lesson-chip{background:#e1f0eb;color:#126e64}
+.reading-item,.word,.review-item,.recommend,.achievement{background:#fffdf8;border-color:var(--line)}
+.tip{border-right-color:#147d72;background:#eaf5ef}
+.table-wrap table{background:#fffdf8}
+.table-wrap th{background:#eaf3ef;color:#45645d}
+.completion-note{background:#eaf5ef;border-color:#cfe1d9}
+.progress span{background:linear-gradient(90deg,#147d72,#e0a33a)}
+.option,.match-item{background:#fffdf8;border-color:var(--line);color:var(--text)}
+.option:hover,.match-item:hover{border-color:#a8d2c6;background:#f2f8f4}
+.option.correct{border-color:#8dcdb3;background:#e6f7ed;color:#145c43}
+.option.wrong{border-color:#e9adb4;background:#fff0f0;color:#9c2f3c}
+.feedback{background:#f9f8f1;border-color:var(--line)}
+.feedback.correct{border-color:#a8d9bd;background:#f0faf3}
+.feedback.wrong{border-color:#e9adb4;background:#fff4f3}
+.quiz-visual{background:#f2efe5;border-color:var(--line)}
+.answer-build,.word-bank{background:#f8f7f0;border-color:var(--line)}
+.word-token{background:#e4f1ed;color:#155e56;border-color:#cfe1d9}
+.word-token.selected,.match-item.selected{background:#d2eae2;border-color:#147d72}
+.result{background:linear-gradient(145deg,#eaf5ef,#fffdf7)}
+.xp-earned{color:#9b640b}
+.stat-card span{color:#147d72}
+.achievement.earned{border-color:#e3c47c;background:#fff7e4}
+.toast{background:#203b3b;color:#fffdf7;border-color:#345956}
+.mobile-nav{background:rgba(255,253,247,.97);border-top-color:var(--line)}
+.mobile-nav a.active{background:#e1f0eb;color:#126e64}
+:focus-visible{outline-color:#147d72}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
